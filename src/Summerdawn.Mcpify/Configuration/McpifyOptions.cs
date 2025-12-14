@@ -22,6 +22,8 @@ public class McpifyRestSection
     public string BaseAddress { get; set; } = "/";
 
     public Dictionary<string, string> DefaultHeaders { get; set; } = [];
+
+    public Dictionary<string, bool> ForwardedHeaders { get; set; } = new() { ["Authorization"] = true };
 }
 
 public class McpifyAuthenticationSection

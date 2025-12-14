@@ -32,10 +32,9 @@ public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IHttpC
             return JsonRpcResponse.ErrorResponse(request.Id, 400, message);
         }
 
-        // Get auth header from HTTP context, if there is an HTTP context.
-        var authHeader = httpContextAccessor.HttpContext?.Request.Headers["Authorization"].FirstOrDefault();
+        var forwardedHeaders = GetForwardedHeaders(httpContextAccessor.HttpContext?.Request);
 
-        var (success, statusCode, responseBody) = await proxyService.ExecuteToolAsync(tool, parameters.Arguments, authHeader);
+        var (success, statusCode, responseBody) = await proxyService.ExecuteToolAsync(tool, parameters.Arguments, forwardedHeaders);
         if (!success)
         {
             logger.LogWarning("REST API returned error {StatusCode} for tool {ToolName}", statusCode, parameters.Name);
@@ -61,6 +60,27 @@ public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IHttpC
         };
 
         return JsonRpcResponse.Success(request.Id, result);
+    }
+
+    private Dictionary<string, string> GetForwardedHeaders(HttpRequest? request)
+    {
+        var requestHeaders = request?.Headers;
+        if (requestHeaders is null) return [];
+
+        var forwardedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (headerName, shouldForward) in options.Value.Rest.ForwardedHeaders)
+        {
+            if (!shouldForward) continue;
+
+            string? headerValue = requestHeaders[headerName].FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(headerValue))
+            {
+                forwardedHeaders[headerName] = headerValue;
+            }
+        }
+
+        return forwardedHeaders;
     }
 
     private static List<object> CreateContent(string responseBody) =>
