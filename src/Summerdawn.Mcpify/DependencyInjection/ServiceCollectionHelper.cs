@@ -18,9 +18,9 @@ public static class ServiceCollectionHelper
         {
             var options = provider.GetRequiredService<IOptions<McpifyOptions>>();
 
-            client.BaseAddress = new Uri(options.Value.ApiBaseUrl);
+            client.BaseAddress = new Uri(options.Value.Rest.BaseAddress);
 
-            foreach (var defaultHeader in options.Value.ApiDefaultHeaders)
+            foreach (var defaultHeader in options.Value.Rest.DefaultHeaders)
             {
                 client.DefaultRequestHeaders.Add(defaultHeader.Key, defaultHeader.Value);
             }
