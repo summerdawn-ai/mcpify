@@ -1,10 +1,10 @@
-# MCP REST Proxy Server
+# Mcpify MCP-to-REST Proxy
 
-A pure-proxy MCP (Model Context Protocol) server that forwards requests to REST APIs without validating JWT tokens. This server acts as a transparent pass-through, allowing MCP clients to interact with existing REST APIs while maintaining complete separation of concerns.
+Mcpify is a pure-proxy MCP (Model Context Protocol) server that forwards requests to REST APIs without validating JWT tokens. This server acts as a transparent pass-through, allowing MCP clients to interact with existing REST APIs while maintaining complete separation of concerns.
 
 ## Overview
 
-The MCP REST Proxy Server:
+Mcpify:
 - **Does NOT validate** JWT tokens, signatures, audiences, issuers, or expiry
 - **Does NOT enforce** authentication on incoming calls
 - **Simply forwards** the `Authorization` header (if present) to the REST API unchanged

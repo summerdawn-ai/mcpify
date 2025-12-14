@@ -9,29 +9,29 @@ namespace Summerdawn.Mcpify.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddMcpToRestProxy(this IServiceCollection services, Action<ProxyOptions> configureOptions)
+    public static IServiceCollection AddMcpify(this IServiceCollection services, Action<McpifyOptions> configureOptions)
     {
         // Configure options from action.
         services.Configure(configureOptions);
 
-        return services.AddMcpToRestProxyCore();
+        return services.AddMcpifyCore();
     }
 
 
-    public static IServiceCollection AddMcpToRestProxy(this IServiceCollection services, IConfiguration proxyConfiguration)
+    public static IServiceCollection AddMcpify(this IServiceCollection services, IConfiguration proxyConfiguration)
     {
         // Configure options from provided config section.
-        services.Configure<ProxyOptions>(proxyConfiguration);
+        services.Configure<McpifyOptions>(proxyConfiguration);
 
-        return services.AddMcpToRestProxyCore();
+        return services.AddMcpifyCore();
     }
 
-    private static IServiceCollection AddMcpToRestProxyCore(this IServiceCollection services)
+    private static IServiceCollection AddMcpifyCore(this IServiceCollection services)
     {
         // Add REST API http client.
         services.AddHttpClient<RestProxyService>((provider, client) =>
         {
-            var options = provider.GetRequiredService<IOptions<ProxyOptions>>();
+            var options = provider.GetRequiredService<IOptions<McpifyOptions>>();
 
             client.BaseAddress = new Uri(options.Value.ApiBaseUrl);
 

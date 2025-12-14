@@ -13,22 +13,22 @@ namespace Summerdawn.Mcpify.DependencyInjection;
 /// </summary>
 /// <remarks>These extensions enable integration of MCP tools with RESTful endpoints, allowing requests to be
 /// proxied through configured handlers. To use these methods, ensure that the required services are registered by
-/// calling AddMcpToRestProxy() during application startup. The extensions also configure a protected resource metadata
+/// calling AddMcpify() during application startup. The extensions also configure a protected resource metadata
 /// endpoint if authentication options are set. All mapped endpoints can be further customized using the returned
 /// convention builder.</remarks>
-public static class McpEndpointRouteBuilderExtensions
+public static class EndpointRouteBuilderExtensions
 {
     /// <summary>
     /// Maps Model Context Protocol requests to REST proxy endpoints.
     /// </summary>
-    public static IEndpointConventionBuilder MapMcpToRestProxy(this IEndpointRouteBuilder endpoints, string route = "")
+    public static IEndpointConventionBuilder MapMcpify(this IEndpointRouteBuilder endpoints, string route = "")
     {
         var services = endpoints.ServiceProvider;
 
         var handler = services.GetService<McpRouteHandler>() ??
-                      throw new InvalidOperationException("Unable to find required services. You must call builder.Services.AddMcpToRestProxy() in application startup code.");
+                      throw new InvalidOperationException("Unable to find required services. You must call builder.Services.AddMcpify() in application startup code.");
 
-        var proxyOptions = services.GetRequiredService<IOptions<ProxyOptions>>().Value;
+        var proxyOptions = services.GetRequiredService<IOptions<McpifyOptions>>().Value;
 
         // Log tool information
         var logger = services.GetRequiredService<ILogger<RestProxyService>>();

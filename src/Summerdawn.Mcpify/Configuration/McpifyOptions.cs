@@ -2,7 +2,7 @@ using Summerdawn.Mcpify.Models;
 
 namespace Summerdawn.Mcpify.Configuration;
 
-public class ProxyOptions
+public class McpifyOptions
 {
     public string ApiBaseUrl { get; set; } = "/";
 
@@ -16,10 +16,10 @@ public class ProxyOptions
 
     public List<ProxyToolDefinition> Tools { get; set; } = [];
 
-    public ProxyAuthenticationSection Authentication { get; set; } = new();
+    public McpifyAuthenticationSection Authentication { get; set; } = new();
 }
 
-public class ProxyAuthenticationSection
+public class McpifyAuthenticationSection
 {
     public bool RequireAuthorization { get; set; } = false;
 

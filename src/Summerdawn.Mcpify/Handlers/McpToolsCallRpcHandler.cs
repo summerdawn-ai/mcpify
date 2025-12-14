@@ -6,7 +6,7 @@ using Summerdawn.Mcpify.Services;
 
 namespace Summerdawn.Mcpify.Handlers;
 
-public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IHttpContextAccessor httpContextAccessor, IOptions<ProxyOptions> options, ILogger<McpToolsCallRpcHandler> logger) : IRpcHandler
+public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IHttpContextAccessor httpContextAccessor, IOptions<McpifyOptions> options, ILogger<McpToolsCallRpcHandler> logger) : IRpcHandler
 {
     public async Task<JsonRpcResponse> HandleAsync(JsonRpcRequest request, CancellationToken cancellationToken = default)
     {

@@ -3,7 +3,7 @@ using Summerdawn.Mcpify.Models;
 
 namespace Summerdawn.Mcpify.Handlers;
 
-public sealed class McpToolsListRpcHandler(IOptions<ProxyOptions> options) : IRpcHandler
+public sealed class McpToolsListRpcHandler(IOptions<McpifyOptions> options) : IRpcHandler
 {
     public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest rpcRequest, CancellationToken cancellationToken = default)
     {
