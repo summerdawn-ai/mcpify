@@ -1,7 +1,7 @@
-using Summerdawn.McpToRestProxy.Configuration;
-using Summerdawn.McpToRestProxy.Models;
+using Summerdawn.Mcpify.Configuration;
+using Summerdawn.Mcpify.Models;
 
-namespace Summerdawn.McpToRestProxy.Handlers;
+namespace Summerdawn.Mcpify.Handlers;
 
 public sealed class McpInitializeRpcHandler(IOptions<ProxyOptions> options) : IRpcHandler
 {

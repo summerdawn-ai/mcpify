@@ -1,6 +1,6 @@
-using Summerdawn.McpToRestProxy.Models;
+using Summerdawn.Mcpify.Models;
 
-namespace Summerdawn.McpToRestProxy.Handlers;
+namespace Summerdawn.Mcpify.Handlers;
 
 public sealed class McpNotificationsInitializedRpcHandler : IRpcHandler
 {

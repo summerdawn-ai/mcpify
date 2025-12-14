@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-using Summerdawn.McpToRestProxy.Configuration;
-using Summerdawn.McpToRestProxy.Handlers;
-using Summerdawn.McpToRestProxy.Services;
+using Summerdawn.Mcpify.Configuration;
+using Summerdawn.Mcpify.Handlers;
+using Summerdawn.Mcpify.Services;
 
-namespace Summerdawn.McpToRestProxy.DependencyInjection;
+namespace Summerdawn.Mcpify.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {

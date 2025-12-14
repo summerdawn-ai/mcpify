@@ -1,10 +1,10 @@
 using System.Text.Json;
 
-using Summerdawn.McpToRestProxy.Configuration;
-using Summerdawn.McpToRestProxy.Models;
-using Summerdawn.McpToRestProxy.Services;
+using Summerdawn.Mcpify.Configuration;
+using Summerdawn.Mcpify.Models;
+using Summerdawn.Mcpify.Services;
 
-namespace Summerdawn.McpToRestProxy.Handlers;
+namespace Summerdawn.Mcpify.Handlers;
 
 public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IHttpContextAccessor httpContextAccessor, IOptions<ProxyOptions> options, ILogger<McpToolsCallRpcHandler> logger) : IRpcHandler
 {

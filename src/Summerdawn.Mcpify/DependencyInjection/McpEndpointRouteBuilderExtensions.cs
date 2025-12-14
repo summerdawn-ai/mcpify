@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
-using Summerdawn.McpToRestProxy.Configuration;
-using Summerdawn.McpToRestProxy.Services;
+using Summerdawn.Mcpify.Configuration;
+using Summerdawn.Mcpify.Services;
 
-namespace Summerdawn.McpToRestProxy.DependencyInjection;
+namespace Summerdawn.Mcpify.DependencyInjection;
 
 /// <summary>
 /// Provides extension methods for mapping MCP (Model-Centric Proxy) endpoints to REST proxy routes in an ASP.NET Core

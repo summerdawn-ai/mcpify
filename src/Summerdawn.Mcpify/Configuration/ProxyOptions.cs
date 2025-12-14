@@ -1,6 +1,6 @@
-using Summerdawn.McpToRestProxy.Models;
+using Summerdawn.Mcpify.Models;
 
-namespace Summerdawn.McpToRestProxy.Configuration;
+namespace Summerdawn.Mcpify.Configuration;
 
 public class ProxyOptions
 {

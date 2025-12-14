@@ -1,4 +1,4 @@
-namespace Summerdawn.McpToRestProxy.Models;
+namespace Summerdawn.Mcpify.Models;
 
 public sealed class McpInitializeParams
 {

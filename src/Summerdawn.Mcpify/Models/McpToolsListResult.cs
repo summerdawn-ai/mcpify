@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Summerdawn.McpToRestProxy.Models;
+namespace Summerdawn.Mcpify.Models;
 
 public sealed class McpToolsListResult
 {

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Http.Extensions;
 
-using Summerdawn.McpToRestProxy.Configuration;
-using Summerdawn.McpToRestProxy.Models;
+using Summerdawn.Mcpify.Configuration;
+using Summerdawn.Mcpify.Models;
 
-namespace Summerdawn.McpToRestProxy.Services;
+namespace Summerdawn.Mcpify.Services;
 
 /// <summary>
 /// Handles HTTP routing for Model Context Protocol calls and protected resource metadata.
