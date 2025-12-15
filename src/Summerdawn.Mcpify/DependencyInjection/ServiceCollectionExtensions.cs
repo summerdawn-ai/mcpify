@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using Summerdawn.Mcpify.Abstractions;
 using Summerdawn.Mcpify.Configuration;
 using Summerdawn.Mcpify.Handlers;
 using Summerdawn.Mcpify.Services;
@@ -31,6 +32,9 @@ public static class ServiceCollectionExtensions
     /// </summary>
     private static McpifyBuilder AddMcpifyCore(this IServiceCollection services)
     {
+        // Add stdio abstraction.
+        services.AddSingleton<IStdio, ConsoleStdio>();
+
         // Add REST API http client.
         services.AddHttpClient<RestProxyService>((provider, client) =>
         {

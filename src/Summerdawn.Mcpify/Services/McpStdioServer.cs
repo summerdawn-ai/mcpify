@@ -4,11 +4,12 @@ using System.Text.Json;
 
 using Microsoft.Extensions.Hosting;
 
+using Summerdawn.Mcpify.Abstractions;
 using Summerdawn.Mcpify.Models;
 
 namespace Summerdawn.Mcpify.Services;
 
-public sealed class McpStdioServer(JsonRpcDispatcher dispatcher, ILogger<McpStdioServer> logger) : BackgroundService
+public sealed class McpStdioServer(IStdio stdio, JsonRpcDispatcher dispatcher, ILogger<McpStdioServer> logger) : BackgroundService
 {
     /// <summary>
     /// Defines JSON serialization options for stdio communication.
@@ -35,8 +36,8 @@ public sealed class McpStdioServer(JsonRpcDispatcher dispatcher, ILogger<McpStdi
         {
             await activation.Task.WaitAsync(stoppingToken);
 
-            await using var inputStream = Console.OpenStandardInput();
-            await using var outputStream = Console.OpenStandardOutput();
+            await using var inputStream = stdio.GetStandardInput();
+            await using var outputStream = stdio.GetStandardOutput();
 
             using var reader = new StreamReader(inputStream, utf8Encoding);
             await using var writer = new StreamWriter(outputStream, utf8Encoding);
