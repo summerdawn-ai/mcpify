@@ -31,22 +31,8 @@ public static class ServiceCollectionExtensions
         // Add core services.
         CoreServiceCollectionExtensions.AddMcpifyCore(services);
 
-        // Add overriding base address creator with support for
-        // base addresses relative to the server's address.
-        services.AddKeyedSingleton<Uri>("Mcpify:Rest:BaseAddress", (provider, _) =>
-        {
-            var options = provider.GetRequiredService<IOptions<McpifyOptions>>();
-
-            var baseAddress = new Uri(options.Value.Rest.BaseAddress, UriKind.RelativeOrAbsolute);
-
-            // Return configured base address if absolute.
-            if (baseAddress.IsAbsoluteUri) return baseAddress;
-
-            // Otherwise, combine with own server address.
-            var serverAddress = GetServerAddress(provider);
-
-            return new Uri(serverAddress, baseAddress);
-        });
+        // Add ASP.NET Core's server address to support relative URI as Mcpify base address.
+        services.AddKeyedSingleton<Uri>("Mcpify:ServerAddress", (provider, _) => GetServerAddress(provider)!);
 
         // Add context accessor for forwarding HTTP headers.
         services.AddHttpContextAccessor();
@@ -57,25 +43,15 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static Uri GetServerAddress(IServiceProvider provider)
+    /// <summary>
+    /// Gets the (first) address of the ASP.NET Core (Kestrel) server.
+    /// </summary>
+    private static Uri? GetServerAddress(IServiceProvider provider)
     {
         var serverFeatures = provider.GetService<IServer>();
         var addressesFeature = serverFeatures?.Features.Get<IServerAddressesFeature>();
-        var serverAddress = addressesFeature?.Addresses.FirstOrDefault() ??
-                            throw new InvalidOperationException("REST base address is relative, but no server address is available. Either configure an absolute " +
-                                                                "base address, or ensure than an ASP.NET Core IServer with at least one address is registered.");
+        var serverAddress = addressesFeature?.Addresses.FirstOrDefault();
 
-        return NormalizeHost(new Uri(serverAddress));
-    }
-
-    private static Uri NormalizeHost(Uri uri)
-    {
-        if (uri.Host is "0.0.0.0" or "::")
-        {
-            var builder = new UriBuilder(uri) { Host = "localhost" };
-            return builder.Uri;
-        }
-
-        return uri;
+        return Uri.TryCreate(serverAddress, UriKind.Absolute, out var uri) ? uri : null;
     }
 }

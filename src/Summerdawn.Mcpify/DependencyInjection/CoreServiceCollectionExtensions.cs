@@ -17,7 +17,7 @@ public static class CoreServiceCollectionExtensions
         services.AddHttpClient<RestProxyService>((provider, client) =>
         {
             var options = provider.GetRequiredService<IOptions<McpifyOptions>>();
-            var baseAddress = provider.GetRequiredKeyedService<Uri>("Mcpify:Rest:BaseAddress");
+            var baseAddress = GetBaseAddress(provider);
 
             client.BaseAddress = baseAddress;
 
@@ -25,16 +25,6 @@ public static class CoreServiceCollectionExtensions
             {
                 client.DefaultRequestHeaders.Add(defaultHeader.Key, defaultHeader.Value);
             }
-        });
-
-        // Add plain base address creator as explicit service.
-        // This allows it to be overridden for AspNetCore with support
-        // for base addresses relative to the server's address.
-        services.AddKeyedSingleton<Uri>("Mcpify:Rest:BaseAddress", (provider, _) =>
-        {
-            var options = provider.GetRequiredService<IOptions<McpifyOptions>>();
-
-            return new Uri(options.Value.Rest.BaseAddress, UriKind.RelativeOrAbsolute);
         });
 
         // Add JSON-RPC dispatcher, handlers and factory.
@@ -49,5 +39,37 @@ public static class CoreServiceCollectionExtensions
         services.AddTransient<Func<string, IRpcHandler?>>(serviceProvider => serviceProvider.GetKeyedService<IRpcHandler>);
 
         return services;
+    }
+
+    private static Uri GetBaseAddress(IServiceProvider provider)
+    {
+        var options = provider.GetRequiredService<IOptions<McpifyOptions>>();
+
+        var baseAddress = new Uri(options.Value.Rest.BaseAddress, UriKind.RelativeOrAbsolute);
+
+        // Return configured base address if absolute.
+        if (baseAddress.IsAbsoluteUri) return baseAddress;
+
+        // Otherwise, get server address from an extension, e.g. Mcpify.AspNetCore.
+        var serverAddress = provider.GetKeyedService<Uri>("Mcpify:ServerAddress") ??
+                            throw new InvalidOperationException("REST base address is relative, but no server address is available. Either configure an absolute " +
+                                                                "base address, or ensure than the Mcpify service builder registers a server address.");
+
+        // Normalize "0.0.0.0" host to "localhost".
+        serverAddress = NormalizeHost(serverAddress);
+
+        // And build absolute URI based on server address.
+        return new Uri(serverAddress, baseAddress);
+    }
+
+    private static Uri NormalizeHost(Uri uri)
+    {
+        if (uri.Host is "0.0.0.0" or "::")
+        {
+            var builder = new UriBuilder(uri) { Host = "localhost" };
+            return builder.Uri;
+        }
+
+        return uri;
     }
 }
