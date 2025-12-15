@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 
@@ -45,7 +46,7 @@ public sealed class McpStdioServer(JsonRpcDispatcher dispatcher, ILogger<McpStdi
             while (!stoppingToken.IsCancellationRequested)
             {
                 // MCP uses simple Line-Delimited JSON.
-                string? requestPayload = await reader.ReadLineAsync(stoppingToken);
+                string? requestPayload = await ReadLineAsync(reader, stoppingToken);
 
                 if (string.IsNullOrWhiteSpace(requestPayload))
                 {
@@ -77,6 +78,29 @@ public sealed class McpStdioServer(JsonRpcDispatcher dispatcher, ILogger<McpStdi
         catch (Exception ex)
         {
             logger.LogError(ex, "Error in stdio server.");
+        }
+    }
+
+    private static async Task<string?> ReadLineAsync(StreamReader reader, CancellationToken stoppingToken)
+    {
+        try
+        {
+            // ReadLineAsync doesn't properly cancel on stdin, so we check the token separately.
+            var readTask = reader.ReadLineAsync(CancellationToken.None).AsTask();
+            
+            var completedTask = await Task.WhenAny(readTask, Task.Delay(Timeout.Infinite, stoppingToken));
+                    
+            if (completedTask != readTask)
+            {
+                // Cancellation was requested
+                return null;
+            }
+                    
+            return await readTask;
+        }
+        catch (OperationCanceledException)
+        {
+            return null;
         }
     }
 }
