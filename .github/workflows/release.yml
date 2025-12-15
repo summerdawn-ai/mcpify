@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (SemVer, e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Restore dependencies
+        run: dotnet restore Mcpify.slnx
+      
+      - name: Build solution
+        run: dotnet build Mcpify.slnx -c Release --no-restore
+      
+      - name: Pack NuGet packages
+        run: |
+          dotnet pack src/Summerdawn.Mcpify/Summerdawn.Mcpify.csproj -c Release --no-build -p:Version=${{ github.event.inputs.version }} -o ./nupkgs
+          dotnet pack src/Summerdawn.Mcpify.AspNetCore/Summerdawn.Mcpify.AspNetCore.csproj -c Release --no-build -p:Version=${{ github.event.inputs.version }} -o ./nupkgs
+      
+      - name: Publish NuGet packages
+        run: |
+          dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      
+      - name: Publish Server for win-x64
+        run: |
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r win-x64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/win-x64
+          cd ./publish/win-x64
+          zip -r ../../mcpify-${{ github.event.inputs.version }}-win-x64.zip .
+      
+      - name: Publish Server for linux-x64
+        run: |
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r linux-x64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/linux-x64
+          cd ./publish/linux-x64
+          zip -r ../../mcpify-${{ github.event.inputs.version }}-linux-x64.zip .
+      
+      - name: Publish Server for osx-x64
+        run: |
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r osx-x64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/osx-x64
+          cd ./publish/osx-x64
+          zip -r ../../mcpify-${{ github.event.inputs.version }}-osx-x64.zip .
+      
+      - name: Publish Server for osx-arm64
+        run: |
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r osx-arm64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/osx-arm64
+          cd ./publish/osx-arm64
+          zip -r ../../mcpify-${{ github.event.inputs.version }}-osx-arm64.zip .
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: Release v${{ github.event.inputs.version }}
+          draft: false
+          prerelease: false
+          files: |
+            mcpify-${{ github.event.inputs.version }}-win-x64.zip
+            mcpify-${{ github.event.inputs.version }}-linux-x64.zip
+            mcpify-${{ github.event.inputs.version }}-osx-x64.zip
+            mcpify-${{ github.event.inputs.version }}-osx-arm64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
