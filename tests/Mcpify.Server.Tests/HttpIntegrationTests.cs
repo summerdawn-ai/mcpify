@@ -23,28 +23,20 @@ public class HttpIntegrationTests : IClassFixture<McpifyServerFactory>
     public async Task ToolsListRequest_ReturnsExpectedTools()
     {
         // Arrange
+        var mockHandler = new MockHttpMessageHandler((request, cancellationToken) =>
+        {
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"status\":\"ok\"}")
+            });
+        });
+
         var client = _factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureServices(services =>
             {
-                // Replace the HttpClient for RestProxyService with a mock handler
-                var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(HttpClient) && 
-                    d.ImplementationFactory != null);
-                
-                if (descriptor != null)
-                {
-                    services.Remove(descriptor);
-                }
-
-                // Mock the HttpClient used by RestProxyService
-                var mockHandler = new MockHttpMessageHandler((request, cancellationToken) =>
-                {
-                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                    {
-                        Content = new StringContent("{\"status\":\"ok\"}")
-                    });
-                });
-
+                // Configure the HttpClient for RestProxyService with a mock handler
+                // This overrides the handler configuration from the main application
                 services.AddHttpClient<RestProxyService>((sp, client) =>
                 {
                     client.BaseAddress = new Uri("http://example.com");
@@ -95,11 +87,8 @@ public class HttpIntegrationTests : IClassFixture<McpifyServerFactory>
         {
             builder.ConfigureServices(services =>
             {
-                // Replace HttpClient for RestProxyService
-                var descriptor = services.SingleOrDefault(d => 
-                    d.ServiceType.IsGenericType &&
-                    d.ServiceType.GetGenericTypeDefinition() == typeof(IHttpClientFactory));
-                
+                // Configure the HttpClient for RestProxyService with a mock handler
+                // This overrides the handler configuration from the main application
                 services.AddHttpClient<RestProxyService>((sp, client) =>
                 {
                     client.BaseAddress = new Uri("http://example.com");
