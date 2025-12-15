@@ -8,7 +8,7 @@ namespace Summerdawn.Mcpify.Services;
 /// <summary>
 /// Handles HTTP routing for Model Context Protocol calls and protected resource metadata.
 /// </summary>
-internal class McpRouteHandler(IOptions<McpifyOptions> options, JsonRpcDispatcher dispatcher)
+internal class McpRouteHandler(JsonRpcDispatcher dispatcher, IOptions<McpifyOptions> options)
 {
     /// <summary>
     /// Handles HTTP requests for MCP RPC calls at the configured route.
@@ -31,8 +31,6 @@ internal class McpRouteHandler(IOptions<McpifyOptions> options, JsonRpcDispatche
 
         // Otherwise dispatch the request to the dispatcher.
         var rpcRequest = await context.Request.ReadFromJsonAsync<JsonRpcRequest>();
-
-        // TODO: Extract header from HTTP request and add to rpcRequest (??)
 
         var rpcResponse = await dispatcher.DispatchAsync(rpcRequest!, CancellationToken.None);
 

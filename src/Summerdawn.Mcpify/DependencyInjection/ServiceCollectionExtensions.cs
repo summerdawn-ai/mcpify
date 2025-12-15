@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 using Summerdawn.Mcpify.Configuration;
 using Summerdawn.Mcpify.Handlers;
@@ -6,12 +8,28 @@ using Summerdawn.Mcpify.Services;
 
 namespace Summerdawn.Mcpify.DependencyInjection;
 
-public static class CoreServiceCollectionExtensions
+public static class ServiceCollectionExtensions
 {
+    public static McpifyBuilder AddMcpify(this IServiceCollection services, Action<McpifyOptions> configureOptions)
+    {
+        // Configure options from action.
+        services.Configure(configureOptions);
+
+        return services.AddMcpifyCore();
+    }
+
+    public static McpifyBuilder AddMcpify(this IServiceCollection services, IConfiguration mcpifyConfiguration)
+    {
+        // Configure options from provided config section.
+        services.Configure<McpifyOptions>(mcpifyConfiguration);
+
+        return services.AddMcpifyCore();
+    }
+
     /// <summary>
-    /// Adds core Mcpify services and JSON-RPC handlers, but no handler for HTTP routing.
+    /// Adds Mcpify proxy, JSON-RPC handlers, and stdio server.
     /// </summary>
-    public static IServiceCollection AddMcpifyCore(IServiceCollection services)
+    private static McpifyBuilder AddMcpifyCore(this IServiceCollection services)
     {
         // Add REST API http client.
         services.AddHttpClient<RestProxyService>((provider, client) =>
@@ -38,7 +56,11 @@ public static class CoreServiceCollectionExtensions
 
         services.AddTransient<Func<string, IRpcHandler?>>(serviceProvider => serviceProvider.GetKeyedService<IRpcHandler>);
 
-        return services;
+        // Add stdio MCP proxy.
+        services.AddSingleton<McpStdioServer>();
+        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<McpStdioServer>());
+
+        return new McpifyBuilder(services);
     }
 
     private static Uri GetBaseAddress(IServiceProvider provider)

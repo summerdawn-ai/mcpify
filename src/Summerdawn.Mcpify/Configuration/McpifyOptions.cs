@@ -23,7 +23,7 @@ public class McpifyRestSection
 
     public Dictionary<string, string> DefaultHeaders { get; set; } = [];
 
-    public Dictionary<string, bool> ForwardedHeaders { get; set; } = new() { ["Authorization"] = true };
+    public Dictionary<string, bool> ForwardedHeaders { get; set; } = [];
 }
 
 public class McpifyAuthenticationSection

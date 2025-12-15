@@ -8,7 +8,7 @@ using Summerdawn.Mcpify.Services;
 
 namespace Summerdawn.Mcpify.Handlers;
 
-public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IHttpContextAccessor httpContextAccessor, IOptions<McpifyOptions> options, ILogger<McpToolsCallRpcHandler> logger) : IRpcHandler
+public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IOptions<McpifyOptions> options, ILogger<McpToolsCallRpcHandler> logger, IHttpContextAccessor? httpContextAccessor = null) : IRpcHandler
 {
     public async Task<JsonRpcResponse> HandleAsync(JsonRpcRequest request, CancellationToken cancellationToken = default)
     {
@@ -32,7 +32,7 @@ public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IHttpC
             return JsonRpcResponse.ErrorResponse(request.Id, 400, message);
         }
 
-        var forwardedHeaders = GetForwardedHeaders(httpContextAccessor.HttpContext?.Request);
+        var forwardedHeaders = GetForwardedHeaders(httpContextAccessor?.HttpContext?.Request);
 
         var (success, statusCode, responseBody) = await proxyService.ExecuteToolAsync(tool, parameters.Arguments, forwardedHeaders);
         if (!success)
@@ -64,14 +64,22 @@ public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IHttpC
 
     private Dictionary<string, string> GetForwardedHeaders(HttpRequest? request)
     {
+        var forwardedHeaderNames = options.Value.Rest.ForwardedHeaders.Where(h => h.Value == true).Select(h => h.Key).ToList();
         var requestHeaders = request?.Headers;
-        if (requestHeaders is null) return [];
+
+        if (forwardedHeaderNames.Any() && requestHeaders is null)
+        {
+            logger.LogWarning("Header forwarding is configured for {count} headers, but no HTTP context is available.", forwardedHeaderNames.Count);
+        }
+
+        if (requestHeaders is null)
+        {
+            return [];
+        }
 
         var forwardedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (headerName, shouldForward) in options.Value.Rest.ForwardedHeaders)
+        foreach (string headerName in forwardedHeaderNames)
         {
-            if (!shouldForward) continue;
-
             string? headerValue = requestHeaders[headerName].FirstOrDefault();
 
             if (!string.IsNullOrEmpty(headerValue))

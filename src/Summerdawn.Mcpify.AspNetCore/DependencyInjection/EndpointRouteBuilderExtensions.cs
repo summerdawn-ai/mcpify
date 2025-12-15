@@ -8,40 +8,38 @@ using Summerdawn.Mcpify.Services;
 namespace Summerdawn.Mcpify.DependencyInjection;
 
 /// <summary>
-/// Provides extension methods for mapping MCP (Model-Centric Proxy) endpoints to REST proxy routes in an ASP.NET Core
+/// Extension methods for <see cref="IEndpointRouteBuilder"/> to configure Mcpify.
 /// application.
 /// </summary>
-/// <remarks>These extensions enable integration of MCP tools with RESTful endpoints, allowing requests to be
-/// proxied through configured handlers. To use these methods, ensure that the required services are registered by
-/// calling AddMcpify() during application startup. The extensions also configure a protected resource metadata
-/// endpoint if authentication options are set. All mapped endpoints can be further customized using the returned
-/// convention builder.</remarks>
 public static class EndpointRouteBuilderExtensions
 {
     /// <summary>
-    /// Maps Model Context Protocol requests to REST proxy endpoints.
+    /// Maps MPC (Model Context Protocol) HTTP(S) endpoints to Mcpify's REST proxy.
     /// </summary>
+    /// <remarks>
+    /// Ensure that you have called <c>builder.Services.AddMcpify().AddAspNetCore()</c> in application startup code.
+    /// All mapped endpoints can be further customized using the returned convention builder.
+    /// </remarks>
     public static IEndpointConventionBuilder MapMcpify(this IEndpointRouteBuilder endpoints, string route = "")
     {
         var services = endpoints.ServiceProvider;
 
         var handler = services.GetService<McpRouteHandler>() ??
-                      throw new InvalidOperationException("Unable to find required services. You must call builder.Services.AddMcpify() in application startup code.");
+                      throw new InvalidOperationException("Unable to find required services. You must call builder.Services.AddMcpify().AddAspNetCore() in application startup code.");
         
-        var proxyOptions = services.GetRequiredService<IOptions<McpifyOptions>>().Value;
+        var options = services.GetRequiredService<IOptions<McpifyOptions>>().Value;
 
-        // Log tool information
+        // Log information
         var logger = services.GetRequiredService<ILogger<RestProxyService>>();
 
-        logger.LogInformation("Successfully loaded {toolCount} tools", proxyOptions.Tools.Count);
-        foreach (var tool in proxyOptions.Tools)
-        {
-            logger.LogInformation("  - {toolName}: {description}", tool.Mcp.Name, tool.Mcp.Description);
-        }
+        logger.LogInformation("Mcpify is configured to handle HTTP MCP traffic.");
+
+        string toolsList = string.Join("\r\n", options.Tools.Select(tool => $"  - {tool.Mcp.Name}: {tool.Mcp.Description}"));
+        logger.LogInformation("Successfully loaded {toolCount} tools:\r\n{toolList}", options.Tools.Count, toolsList);
 
         // Set up protected resource metadata endpoint if configured.
         // This endpoint will _not_ be affected by configuration of the main route (e.g. RequireAuthorization).
-        if (proxyOptions.Authentication.ResourceMetadata is not null)
+        if (options.Authentication.ResourceMetadata is not null)
         {
             endpoints.MapGet($"/.well-known/oauth-protected-resource/{route}", handler.HandleProtectedResourceAsync);
         }
