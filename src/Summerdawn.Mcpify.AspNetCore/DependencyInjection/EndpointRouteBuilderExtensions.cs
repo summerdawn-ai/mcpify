@@ -14,7 +14,7 @@ namespace Summerdawn.Mcpify.DependencyInjection;
 public static class EndpointRouteBuilderExtensions
 {
     /// <summary>
-    /// Maps MPC (Model Context Protocol) HTTP(S) endpoints to Mcpify's REST proxy.
+    /// Maps MCP (Model Context Protocol) HTTP(S) endpoints to Mcpify's REST proxy.
     /// </summary>
     /// <remarks>
     /// Ensure that you have called <c>builder.Services.AddMcpify().AddAspNetCore()</c> in application startup code.
