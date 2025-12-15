@@ -7,7 +7,7 @@ namespace Summerdawn.Mcpify.Services;
 /// <summary>
 /// Provides validation for MCP tool arguments.
 /// </summary>
-public static class ToolValidator
+internal static class ToolValidator
 {
     /// <summary>
     /// Validates that the provided arguments match the tool's input schema.

@@ -7,7 +7,7 @@ namespace Summerdawn.Mcpify.Handlers;
 /// <summary>
 /// Defines a handler for JSON-RPC requests in the MCP protocol.
 /// </summary>
-public interface IRpcHandler
+internal interface IRpcHandler
 {
     /// <summary>
     /// Handles a JSON-RPC request and returns a response.

@@ -5,7 +5,7 @@ namespace Summerdawn.Mcpify.Models;
 /// <summary>
 /// Represents the result of an MCP initialize request.
 /// </summary>
-public sealed class McpInitializeResult
+internal sealed class McpInitializeResult
 {
     /// <summary>
     /// Gets or sets the MCP protocol version.
@@ -32,7 +32,7 @@ public sealed class McpInitializeResult
 /// <summary>
 /// Represents MCP server capabilities.
 /// </summary>
-public sealed class McpCapabilities
+internal sealed class McpCapabilities
 {
     /// <summary>
     /// Gets or sets the completions capability.
@@ -100,28 +100,28 @@ public sealed class McpServerInfo
 /// <summary>
 /// Represents MCP completions capability.
 /// </summary>
-public sealed record McpCompletionsCapabilities();
+internal sealed record McpCompletionsCapabilities();
 
 /// <summary>
 /// Represents MCP logging capability.
 /// </summary>
-public sealed record McpLoggingCapabilities();
+internal sealed record McpLoggingCapabilities();
 
 /// <summary>
 /// Represents MCP prompts capability.
 /// </summary>
 /// <param name="ListChanged">Indicates whether the prompts list can change.</param>
-public sealed record McpPromptsCapabilities(bool? ListChanged);
+internal sealed record McpPromptsCapabilities(bool? ListChanged);
 
 /// <summary>
 /// Represents MCP resources capability.
 /// </summary>
 /// <param name="Subscribe">Indicates whether subscription to resources is supported.</param>
 /// <param name="ListChanged">Indicates whether the resources list can change.</param>
-public sealed record McpResourcesCapabilities(bool? Subscribe, bool? ListChanged);
+internal sealed record McpResourcesCapabilities(bool? Subscribe, bool? ListChanged);
 
 /// <summary>
 /// Represents MCP tools capability.
 /// </summary>
 /// <param name="ListChanged">Indicates whether the tools list can change.</param>
-public sealed record McpToolsCapabilities(bool? ListChanged);
+internal sealed record McpToolsCapabilities(bool? ListChanged);

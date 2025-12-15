@@ -9,7 +9,7 @@ namespace Summerdawn.Mcpify.Services;
 /// <summary>
 /// Service for executing REST API calls as proxy for MCP tools.
 /// </summary>
-public class RestProxyService(HttpClient httpClient, ILogger<RestProxyService> logger)
+internal class RestProxyService(HttpClient httpClient, ILogger<RestProxyService> logger)
 {
     private static readonly Regex PlaceholderRegex = new Regex(@"\{(\w+)\}");
 

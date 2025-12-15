@@ -3,7 +3,7 @@ namespace Summerdawn.Mcpify.Models;
 /// <summary>
 /// Represents the parameters for an MCP initialize request.
 /// </summary>
-public sealed class McpInitializeParams
+internal sealed class McpInitializeParams
 {
     /// <summary>
     /// Gets or sets the protocol version requested by the client.
@@ -21,4 +21,4 @@ public sealed class McpInitializeParams
 /// </summary>
 /// <param name="Name">The client name.</param>
 /// <param name="Version">The client version.</param>
-public sealed record McpClientInfo(string? Name, string? Version);
+internal sealed record McpClientInfo(string? Name, string? Version);

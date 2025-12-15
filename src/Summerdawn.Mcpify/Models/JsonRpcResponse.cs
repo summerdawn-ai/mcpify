@@ -6,7 +6,7 @@ namespace Summerdawn.Mcpify.Models;
 /// <summary>
 /// Represents a JSON-RPC 2.0 response.
 /// </summary>
-public sealed class JsonRpcResponse
+internal sealed class JsonRpcResponse
 {
     /// <summary>
     /// Gets an empty result dictionary used for successful responses without a result.
@@ -121,7 +121,7 @@ public sealed class JsonRpcResponse
 /// <summary>
 /// Represents a JSON-RPC error.
 /// </summary>
-public sealed class JsonRpcError
+internal sealed class JsonRpcError
 {
     /// <summary>
     /// Gets or sets the error code.

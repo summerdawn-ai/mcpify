@@ -5,7 +5,7 @@ namespace Summerdawn.Mcpify.Models;
 /// <summary>
 /// Represents the result of an MCP tools/list request.
 /// </summary>
-public sealed class McpToolsListResult
+internal sealed class McpToolsListResult
 {
     /// <summary>
     /// Gets or sets the list of available tools.

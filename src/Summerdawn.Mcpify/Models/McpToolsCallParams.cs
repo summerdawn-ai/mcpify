@@ -6,7 +6,7 @@ namespace Summerdawn.Mcpify.Models;
 /// <summary>
 /// Represents the parameters for an MCP tools/call request.
 /// </summary>
-public sealed class McpToolsCallParams
+internal sealed class McpToolsCallParams
 {
     /// <summary>
     /// Gets or sets the name of the tool to call.

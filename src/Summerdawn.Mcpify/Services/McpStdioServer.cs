@@ -12,7 +12,7 @@ namespace Summerdawn.Mcpify.Services;
 /// <summary>
 /// Background service that handles MCP JSON-RPC communication over stdio.
 /// </summary>
-public sealed class McpStdioServer(IStdio stdio, JsonRpcDispatcher dispatcher, ILogger<McpStdioServer> logger) : BackgroundService
+internal sealed class McpStdioServer(IStdio stdio, JsonRpcDispatcher dispatcher, ILogger<McpStdioServer> logger) : BackgroundService
 {
     /// <summary>
     /// Defines JSON serialization options for stdio communication.

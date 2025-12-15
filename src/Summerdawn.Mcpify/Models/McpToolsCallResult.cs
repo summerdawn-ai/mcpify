@@ -6,7 +6,7 @@ namespace Summerdawn.Mcpify.Models;
 /// <summary>
 /// Represents the result of an MCP tools/call request.
 /// </summary>
-public class McpToolsCallResult
+internal class McpToolsCallResult
 {
     /// <summary>
     /// Gets or sets the content of the tool result.
@@ -28,7 +28,7 @@ public class McpToolsCallResult
 /// <summary>
 /// Represents text content in an MCP response.
 /// </summary>
-public record McpTextContent
+internal record McpTextContent
 {
     /// <summary>
     /// Gets the content type. Always "text".

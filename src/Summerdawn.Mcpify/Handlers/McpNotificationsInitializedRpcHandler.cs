@@ -5,7 +5,7 @@ namespace Summerdawn.Mcpify.Handlers;
 /// <summary>
 /// Handles the MCP notifications/initialized notification.
 /// </summary>
-public sealed class McpNotificationsInitializedRpcHandler(ILogger<McpNotificationsInitializedRpcHandler> logger) : IRpcHandler
+internal sealed class McpNotificationsInitializedRpcHandler(ILogger<McpNotificationsInitializedRpcHandler> logger) : IRpcHandler
 {
     /// <inheritdoc/>
     public Task<JsonRpcResponse> HandleAsync(JsonRpcRequest rpcRequest, CancellationToken cancellationToken = default)
