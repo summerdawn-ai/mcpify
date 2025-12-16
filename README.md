@@ -346,8 +346,13 @@ dotnet run --mode http
 ```
 
 **Stdio Mode:**
+
+Build first to not pollute the stdio stream with build logs:
+
 ```bash
-dotnet run --mode stdio
+cd src/Summerdawn.Mcpify.Server
+dotnet build
+.\bin\Debug\net8.0\mcpify.exe --mode stdio
 ```
 
 See [Summerdawn.Mcpify.Server README](src/Summerdawn.Mcpify.Server/README.md) for complete documentation.

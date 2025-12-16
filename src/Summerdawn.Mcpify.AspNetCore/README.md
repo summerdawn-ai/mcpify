@@ -240,9 +240,8 @@ builder.Services.Configure<McpifyOptions>(options =>
     options.Authentication.RequireAuthorization = true;
 });
 
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapMcpify().RequireAuthorization(); // Apply auth policy
+// Don't add authorization middleware, else Mcpify won't send the proper WWW-Authenticate response header
+app.MapMcpify()
 ```
 
 ### Custom Routes
@@ -286,7 +285,7 @@ If you don't want to write any code, a pre-built standalone server is available:
 
 ```bash
 dotnet tool install -g Summerdawn.Mcpify.Server
-mcpify-server --mode http
+mcpify --mode http
 ```
 
 Or download from [GitHub Releases](https://github.com/summerdawn-ai/mcpify/releases).
