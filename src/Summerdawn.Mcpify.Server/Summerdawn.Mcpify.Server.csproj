@@ -17,4 +17,8 @@
     <ProjectReference Include="..\Summerdawn.Mcpify\Summerdawn.Mcpify.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\README.md" Link="README.md" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
