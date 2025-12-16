@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace Mcpify.Server.Tests;
+namespace Summerdawn.Mcpify.Server.Tests;
 
 /// <summary>
 /// Custom WebApplicationFactory that uses ProgramHttp's CreateHostBuilder method.
