@@ -20,13 +20,15 @@ public class McpToolsCallRpcHandlerTests
     {
         // Arrange
         var options = CreateOptions([]);
-        var mockProxyService = new Mock<RestProxyService>(MockBehavior.Strict, null!, null!);
-        var mockLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
+        var mockHttpClient = new HttpClient();
+        var mockLogger = new Mock<ILogger<RestProxyService>>();
+        var mockProxyService = new Mock<RestProxyService>(mockHttpClient, mockLogger.Object);
+        var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
         
         var handler = new McpToolsCallRpcHandler(
             mockProxyService.Object,
             options,
-            mockLogger.Object,
+            mockHandlerLogger.Object,
             null);
 
         var request = CreateRequest("nonexistent_tool", new Dictionary<string, JsonElement>());
@@ -46,13 +48,15 @@ public class McpToolsCallRpcHandlerTests
         // Arrange
         var tool = CreateTestTool("test_tool", requiredProperties: ["message"]);
         var options = CreateOptions([tool]);
-        var mockProxyService = new Mock<RestProxyService>(MockBehavior.Strict, null!, null!);
-        var mockLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
+        var mockHttpClient = new HttpClient();
+        var mockLogger = new Mock<ILogger<RestProxyService>>();
+        var mockProxyService = new Mock<RestProxyService>(mockHttpClient, mockLogger.Object);
+        var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
         
         var handler = new McpToolsCallRpcHandler(
             mockProxyService.Object,
             options,
-            mockLogger.Object,
+            mockHandlerLogger.Object,
             null);
 
         // Missing required "message" argument
@@ -73,7 +77,9 @@ public class McpToolsCallRpcHandlerTests
         var tool = CreateTestTool("test_tool", requiredProperties: ["message"]);
         var options = CreateOptions([tool]);
         
-        var mockProxyService = new Mock<RestProxyService>(MockBehavior.Strict, null!, null!);
+        var mockHttpClient = new HttpClient();
+        var mockLogger = new Mock<ILogger<RestProxyService>>();
+        var mockProxyService = new Mock<RestProxyService>(mockHttpClient, mockLogger.Object);
         mockProxyService
             .Setup(x => x.ExecuteToolAsync(
                 It.IsAny<ProxyToolDefinition>(),
@@ -81,12 +87,12 @@ public class McpToolsCallRpcHandlerTests
                 It.IsAny<Dictionary<string, string>>()))
             .ReturnsAsync((false, 500, "Internal Server Error"));
         
-        var mockLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
+        var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
         
         var handler = new McpToolsCallRpcHandler(
             mockProxyService.Object,
             options,
-            mockLogger.Object,
+            mockHandlerLogger.Object,
             null);
 
         var arguments = new Dictionary<string, JsonElement>
@@ -118,7 +124,9 @@ public class McpToolsCallRpcHandlerTests
         var options = CreateOptions([tool]);
         
         var jsonResponse = "{\"status\":\"success\",\"data\":\"test\"}";
-        var mockProxyService = new Mock<RestProxyService>(MockBehavior.Strict, null!, null!);
+        var mockHttpClient = new HttpClient();
+        var mockLogger = new Mock<ILogger<RestProxyService>>();
+        var mockProxyService = new Mock<RestProxyService>(mockHttpClient, mockLogger.Object);
         mockProxyService
             .Setup(x => x.ExecuteToolAsync(
                 It.IsAny<ProxyToolDefinition>(),
@@ -126,12 +134,12 @@ public class McpToolsCallRpcHandlerTests
                 It.IsAny<Dictionary<string, string>>()))
             .ReturnsAsync((true, 200, jsonResponse));
         
-        var mockLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
+        var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
         
         var handler = new McpToolsCallRpcHandler(
             mockProxyService.Object,
             options,
-            mockLogger.Object,
+            mockHandlerLogger.Object,
             null);
 
         var arguments = new Dictionary<string, JsonElement>
