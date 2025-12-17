@@ -92,7 +92,7 @@ dotnet tool install Summerdawn.Mcpify.Server
 
 Then run:
 ```bash
-mcpify --mode stdio
+mcpify-server --mode stdio
 ```
 
 ### As a Standalone Binary
@@ -387,7 +387,7 @@ Build first to not pollute the stdio stream with build logs:
 ```bash
 cd src/Summerdawn.Mcpify.Server
 dotnet build
-.\bin\Debug\net8.0\mcpify.exe --mode stdio
+.\bin\Debug\net8.0\mcpify-server.exe --mode stdio
 ```
 
 See [Summerdawn.Mcpify.Server README](src/Summerdawn.Mcpify.Server/README.md) for complete documentation.

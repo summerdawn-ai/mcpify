@@ -42,7 +42,7 @@ For network-based MCP clients:
 
 ```bash
 # If installed as a dotnet tool:
-mcpify --mode http
+mcpify-server --mode http
 
 # Or with downloaded binary:
 ./mcpify-server --mode http
@@ -58,7 +58,7 @@ For process-based MCP clients (Claude Desktop, VS Code):
 
 ```bash
 # If installed as a dotnet tool:
-mcpify --mode stdio
+mcpify-server --mode stdio
 
 # Or with downloaded binary:
 ./mcpify-server --mode stdio
@@ -236,7 +236,7 @@ Configure stdio mode for VS Code MCP extensions:
 {
   "mcpServers": {
     "my-api": {
-      "command": "mcpify",
+      "command": "mcpify-server",
       "args": ["--mode", "stdio"],
       "env": {
         "DOTNET_CONTENTROOT": "path/to/config"
@@ -331,7 +331,7 @@ Edit Claude's configuration file:
 {
   "mcpServers": {
     "my-api": {
-      "command": "mcpify",
+      "command": "mcpify-server",
       "args": ["--mode", "stdio"],
       "env": {
         "DOTNET_CONTENTROOT": "/full/path/to/config/directory"
