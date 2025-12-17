@@ -12,11 +12,14 @@ on:
         required: false
         type: boolean
         default: true
-      release_server:
-        description: 'Release server binaries'
+      publish-server:
+        description: 'Publish server binaries'
         required: false
         type: boolean
         default: true
+
+env:
+  DOTNET_VERSION: '8.0.x'
 
 jobs:
   validate:
@@ -54,7 +57,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
       
       - name: Restore dependencies
         run: dotnet restore Mcpify.slnx
@@ -75,31 +78,8 @@ jobs:
           path: ./nupkgs/*.nupkg
           retention-days: 1
 
-  publish-nuget:
-    needs: [validate, build]
-    if: ${{ github.event.inputs.publish_nuget == 'true' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Download NuGet packages
-        uses: actions/download-artifact@v4
-        with:
-          name: nupkgs
-          path: ./nupkgs
-      
-      - name: Publish NuGet packages
-        run: |
-          dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
-
-  release-server:
-    needs: [validate, build]
-    if: ${{ github.event.inputs.release_server == 'true' }}
+  create-release:
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -108,47 +88,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-      
-      - name: Publish Server for win-x64
-        run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r win-x64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/win-x64
-          cd ./publish/win-x64
-          zip -r ../../mcpify-${{ github.event.inputs.version }}-win-x64.zip .
-      
-      - name: Publish Server for win-arm64
-        run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r win-arm64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/win-arm64
-          cd ./publish/win-arm64
-          zip -r ../../mcpify-${{ github.event.inputs.version }}-win-arm64.zip .
-      
-      - name: Publish Server for linux-x64
-        run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r linux-x64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/linux-x64
-          cd ./publish/linux-x64
-          zip -r ../../mcpify-${{ github.event.inputs.version }}-linux-x64.zip .
-      
-      - name: Publish Server for linux-arm64
-        run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r linux-arm64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/linux-arm64
-          cd ./publish/linux-arm64
-          zip -r ../../mcpify-${{ github.event.inputs.version }}-linux-arm64.zip .
-      
-      - name: Publish Server for osx-x64
-        run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r osx-x64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/osx-x64
-          cd ./publish/osx-x64
-          zip -r ../../mcpify-${{ github.event.inputs.version }}-osx-x64.zip .
-      
-      - name: Publish Server for osx-arm64
-        run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r osx-arm64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/osx-arm64
-          cd ./publish/osx-arm64
-          zip -r ../../mcpify-${{ github.event.inputs.version }}-osx-arm64.zip .
       
       - name: Get previous tag for changelog
         id: get_previous_tag
@@ -215,36 +154,87 @@ jobs:
           draft: false
           prerelease: ${{ needs.validate.outputs.is_prerelease }}
           body: ${{ steps.build_changelog.outputs.changelog }}
-          files: |
-            mcpify-${{ github.event.inputs.version }}-win-x64.zip
-            mcpify-${{ github.event.inputs.version }}-win-arm64.zip
-            mcpify-${{ github.event.inputs.version }}-linux-x64.zip
-            mcpify-${{ github.event.inputs.version }}-linux-arm64.zip
-            mcpify-${{ github.event.inputs.version }}-osx-x64.zip
-            mcpify-${{ github.event.inputs.version }}-osx-arm64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  tag-release:
-    needs: [validate, build, publish-nuget, release-server]
-    if: |
-      always() && 
-      (needs.publish-nuget.result == 'success' && github.event.inputs.publish_nuget == 'true') ||
-      (needs.release-server.result == 'success' && github.event.inputs.release_server == 'true')
+  publish-nuget:
+    needs: create-release
+    if: ${{ github.event.inputs.publish_nuget == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Download NuGet packages
+        uses: actions/download-artifact@v4
+        with:
+          name: nupkgs
+          path: ./nupkgs
+      
+      - name: Publish NuGet packages
+        run: |
+          dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+  attach-server-binaries:
+    needs: create-release
+    if: ${{ github.event.inputs.publish-server == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       
-      - name: Tag repository
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: Publish Server for win-x64
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git rev-parse "v${{ github.event.inputs.version }}" >/dev/null 2>&1; then
-            git tag -a "v${{ github.event.inputs.version }}" -m "Release v${{ github.event.inputs.version }}"
-            git push origin "v${{ github.event.inputs.version }}"
-          fi
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r win-x64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/win-x64
+          cd ./publish/win-x64
+          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-win-x64.zip .
+      
+      - name: Publish Server for win-arm64
+        run: |
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r win-arm64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/win-arm64
+          cd ./publish/win-arm64
+          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-win-arm64.zip .
+      
+      - name: Publish Server for linux-x64
+        run: |
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r linux-x64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/linux-x64
+          cd ./publish/linux-x64
+          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-linux-x64.zip .
+      
+      - name: Publish Server for linux-arm64
+        run: |
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r linux-arm64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/linux-arm64
+          cd ./publish/linux-arm64
+          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-linux-arm64.zip .
+      
+      - name: Publish Server for osx-x64
+        run: |
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r osx-x64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/osx-x64
+          cd ./publish/osx-x64
+          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-osx-x64.zip .
+      
+      - name: Publish Server for osx-arm64
+        run: |
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r osx-arm64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/osx-arm64
+          cd ./publish/osx-arm64
+          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-osx-arm64.zip .
+      
+      - name: Attach binaries to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          files: |
+            mcpify-server-${{ github.event.inputs.version }}-win-x64.zip
+            mcpify-server-${{ github.event.inputs.version }}-win-arm64.zip
+            mcpify-server-${{ github.event.inputs.version }}-linux-x64.zip
+            mcpify-server-${{ github.event.inputs.version }}-linux-arm64.zip
+            mcpify-server-${{ github.event.inputs.version }}-osx-x64.zip
+            mcpify-server-${{ github.event.inputs.version }}-osx-arm64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
