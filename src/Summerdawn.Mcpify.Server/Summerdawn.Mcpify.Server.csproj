@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>mcpify</AssemblyName>
+    <AssemblyName>mcpify-server</AssemblyName>
   </PropertyGroup>
 
   <!-- NuGet properties -->
