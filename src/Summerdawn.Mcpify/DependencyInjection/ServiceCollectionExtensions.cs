@@ -65,6 +65,7 @@ public static class ServiceCollectionExtensions
         });
 
         // Add JSON-RPC dispatcher, handlers and factory.
+        services.AddSingleton<IJsonRpcDispatcher, JsonRpcDispatcher>();
         services.AddSingleton<JsonRpcDispatcher>();
 
         services.AddKeyedSingleton<IRpcHandler, McpPingRpcHandler>("ping");
