@@ -180,6 +180,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    strategy:
+      matrix:
+        rid: [win-x64, win-arm64, linux-x64, linux-arm64, osx-x64, osx-arm64]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -189,52 +192,34 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       
-      - name: Publish Server for win-x64
+      - name: Publish Server for ${{ matrix.rid }}
         run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r win-x64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/win-x64
-          cd ./publish/win-x64
-          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-win-x64.zip .
+          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/${{ matrix.rid }}
+          cd ./publish/${{ matrix.rid }}
+          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip .
       
-      - name: Publish Server for win-arm64
-        run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r win-arm64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/win-arm64
-          cd ./publish/win-arm64
-          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-win-arm64.zip .
-      
-      - name: Publish Server for linux-x64
-        run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r linux-x64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/linux-x64
-          cd ./publish/linux-x64
-          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-linux-x64.zip .
-      
-      - name: Publish Server for linux-arm64
-        run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r linux-arm64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/linux-arm64
-          cd ./publish/linux-arm64
-          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-linux-arm64.zip .
-      
-      - name: Publish Server for osx-x64
-        run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r osx-x64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/osx-x64
-          cd ./publish/osx-x64
-          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-osx-x64.zip .
-      
-      - name: Publish Server for osx-arm64
-        run: |
-          dotnet publish src/Summerdawn.Mcpify.Server/Summerdawn.Mcpify.Server.csproj -c Release -r osx-arm64 --self-contained -p:Version=${{ github.event.inputs.version }} -o ./publish/osx-arm64
-          cd ./publish/osx-arm64
-          zip -r ../../mcpify-server-${{ github.event.inputs.version }}-osx-arm64.zip .
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-binaries-${{ matrix.rid }}
+          path: mcpify-server-${{ github.event.inputs.version }}-${{ matrix.rid }}.zip
+          retention-days: 1
+  
+  attach-binaries-to-release:
+    needs: attach-server-binaries
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
       
       - name: Attach binaries to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.event.inputs.version }}
-          files: |
-            mcpify-server-${{ github.event.inputs.version }}-win-x64.zip
-            mcpify-server-${{ github.event.inputs.version }}-win-arm64.zip
-            mcpify-server-${{ github.event.inputs.version }}-linux-x64.zip
-            mcpify-server-${{ github.event.inputs.version }}-linux-arm64.zip
-            mcpify-server-${{ github.event.inputs.version }}-osx-x64.zip
-            mcpify-server-${{ github.event.inputs.version }}-osx-arm64.zip
+          files: artifacts/server-binaries-*/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
