@@ -1,15 +1,17 @@
 # Summerdawn.Mcpify
 
-Core library providing MCP (Model Context Protocol) implementation and REST API proxy functionality.
+Mcpify is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.
 
 ## Overview
+
+Mcpify enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoint mappings in JSON, and Mcpify translates requests between MCP clients and your REST service.
 
 This package provides the foundational components for building MCP servers that proxy requests to REST APIs:
 
 - **JSON-RPC 2.0 message handling** - Parse and dispatch MCP protocol messages
 - **MCP protocol implementation** - Server info, tool listing, and tool execution
 - **REST API proxy service** - HTTP client with parameter interpolation
-- **STDIO support** - Process-based communication via `IStdio` abstraction
+- **STDIO support** - Process-based communication via stdio
 
 ### When to Use This Package
 
@@ -19,7 +21,7 @@ Use `Summerdawn.Mcpify` when you need:
 - Integration with existing service architectures
 - STDIO-based communication for process integration
 
-**Most users should use `Summerdawn.Mcpify.AspNetCore` instead**, which provides easier integration with ASP.NET Core applications.
+**Most users should use `Summerdawn.Mcpify.AspNetCore` instead**, which provides HTTP support using ASP.NET Core.
 
 ## Installation
 
@@ -34,7 +36,7 @@ dotnet add package Summerdawn.Mcpify
 - **Microsoft.Extensions.Hosting.Abstractions** - Hosting abstractions
 - **Microsoft.AspNetCore.Http.Abstractions** - HTTP context abstractions
 
-## Basic Usage
+## Usage
 
 ### Service Registration
 
@@ -45,7 +47,7 @@ using Summerdawn.Mcpify.DependencyInjection;
 services.AddMcpify(configuration.GetSection("Mcpify"));
 ```
 
-### Configuration
+### Basic Configuration Example
 
 ```json
 {
@@ -54,9 +56,6 @@ services.AddMcpify(configuration.GetSection("Mcpify"));
       "BaseAddress": "https://api.example.com",
       "DefaultHeaders": {
         "User-Agent": "MyApp-MCP/1.0"
-      },
-      "ForwardedHeaders": {
-        "Authorization": true
       }
     },
     "ServerInfo": {
@@ -90,7 +89,9 @@ services.AddMcpify(configuration.GetSection("Mcpify"));
 }
 ```
 
-### Note for Most Users
+For complete configuration documentation including authorization, header forwarding, and all available settings, see the [main README](https://github.com/summerdawn-ai/mcpify#configuration).
+
+### Using with ASP.NET Core
 
 If you're building an ASP.NET Core application, use the `Summerdawn.Mcpify.AspNetCore` package instead:
 
@@ -102,24 +103,15 @@ It provides simpler integration with endpoint routing and middleware.
 
 ## Configuration
 
-### Rest Options
+For detailed configuration including: 
+- All configuration settings and their meanings
+- Tool mappings structure
+- Parameter interpolation
+- Authorization scenarios (MCP Authorization, default headers, forwarded headers)
+- Loading from separate files
+- Generating from OpenAPI specs
 
-- **BaseAddress**: Base URL for the REST API
-- **DefaultHeaders**: Headers sent with every request
-- **ForwardedHeaders**: Headers forwarded from MCP client requests (e.g., `Authorization`)
-
-### Tool Definition
-
-Each tool requires:
-- **mcp.name**: Unique tool identifier
-- **mcp.description**: Human-readable description
-- **mcp.inputSchema**: JSON Schema for input validation
-- **rest.method**: HTTP method (GET, POST, PUT, DELETE, PATCH)
-- **rest.path**: URL path with `{param}` placeholders
-- **rest.query**: Optional query string with `{param}` placeholders
-- **rest.body**: Optional request body with `{param}` placeholders
-
-For detailed configuration documentation, see the [main README](https://github.com/summerdawn-ai/mcpify/blob/main/README.md#configuration).
+See the [main README Configuration section](https://github.com/summerdawn-ai/mcpify#configuration).
 
 ## API Overview
 
@@ -142,29 +134,13 @@ For detailed configuration documentation, see the [main README](https://github.c
   - `tools/list` - List available tools
   - `tools/call` - Execute a tool
 
-### STDIO Support
-
-The `IStdio` abstraction enables process-based communication:
-
-```csharp
-public interface IStdio
-{
-    Task<string?> ReadLineAsync(CancellationToken cancellationToken = default);
-    Task WriteLineAsync(string message, CancellationToken cancellationToken = default);
-}
-```
-
-This allows MCP clients to communicate with your server via standard input/output, useful for:
-- Claude Desktop integration
-- VS Code MCP extensions
-- Command-line based MCP clients
-
 ## Further Documentation
 
-- **Detailed Configuration**: See the [main README](https://github.com/summerdawn-ai/mcpify/blob/main/README.md) for comprehensive configuration examples and parameter interpolation details
-- **Source Code**: Visit the [GitHub repository](https://github.com/summerdawn-ai/mcpify)
-- **ASP.NET Core Integration**: See [Summerdawn.Mcpify.AspNetCore](https://github.com/summerdawn-ai/mcpify/blob/main/src/Summerdawn.Mcpify.AspNetCore/README.md)
-- **Standalone Server**: See [Summerdawn.Mcpify.Server](https://github.com/summerdawn-ai/mcpify/blob/main/src/Summerdawn.Mcpify.Server/README.md)
+- **Configuration Details**: [Main README](https://github.com/summerdawn-ai/mcpify#configuration)
+- **MCP Client Setup**: [Main README](https://github.com/summerdawn-ai/mcpify#configuring-mcp-clients-for-mcpify)
+- **ASP.NET Core Integration**: [Summerdawn.Mcpify.AspNetCore](https://github.com/summerdawn-ai/mcpify/blob/main/src/Summerdawn.Mcpify.AspNetCore/README.md)
+- **Standalone Server**: [Summerdawn.Mcpify.Server](https://github.com/summerdawn-ai/mcpify/blob/main/src/Summerdawn.Mcpify.Server/README.md)
+- **GitHub Repository**: [summerdawn-ai/mcpify](https://github.com/summerdawn-ai/mcpify)
 
 ## License
 

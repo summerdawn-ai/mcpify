@@ -16,7 +16,7 @@
   <!-- NuGet properties -->
   <PropertyGroup>
     <PackageId>Summerdawn.Mcpify.AspNetCore</PackageId>
-    <Description>ASP.NET Core integration for Mcpify MCP-to-REST proxy, providing middleware and routing extensions.</Description>
+    <Description>ASP.NET Core support for Mcpify. Mcpify is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
