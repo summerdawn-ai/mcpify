@@ -1,8 +1,10 @@
 # Summerdawn.Mcpify.AspNetCore
 
-ASP.NET Core integration for hosting Mcpify MCP servers in web applications.
+ASP.NET Core support for Mcpify. Mcpify is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.
 
 ## Overview
+
+Mcpify enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoint mappings in JSON, and Mcpify translates requests between MCP clients and your REST service.
 
 This package provides seamless integration between Mcpify and ASP.NET Core, enabling you to:
 

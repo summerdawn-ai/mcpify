@@ -1,22 +1,21 @@
 # Mcpify
 
-**A zero-code MCP (Model Context Protocol) proxy for REST APIs**
-
-Mcpify enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoints in JSON, and Mcpify handles all the protocol translation between MCP clients and your REST services.
+Mcpify is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.
 
 ## Overview
 
-### What is Mcpify?
-
-Mcpify is a configurable proxy that sits between MCP clients (like Claude Desktop, VS Code with MCP extensions, or other AI assistants) and REST APIs. It translates MCP tool calls into REST API requests and responses back into MCP format, all without requiring any code changes to your existing APIs.
+Mcpify enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoint mappings in JSON, and Mcpify translates requests between MCP clients and your REST service.
 
 ### Key Benefits
 
 - **Zero Code Required**: Define tools entirely through JSON configuration
 - **No API Changes**: Works with existing REST APIs without modifications
+- **Standards-Based**: Implements MCP protocol and JSON-RPC 2.0 including MCP Authorization
+- **Multiple Transports**: Supports both HTTP and stdio communication
 - **Flexible Architecture**: Use as a library, ASP.NET Core middleware, or standalone server
-- **Standards-Based**: Implements MCP protocol and JSON-RPC 2.0
+- **Cross-Platform**: Runs on Windows, Linux, and macOS
 - **Easy Integration**: Simple configuration for common scenarios
+- **Open Source**: Fully open source under the MIT License
 
 ### Use Cases
 
@@ -57,16 +56,16 @@ Mcpify is a configurable proxy that sits between MCP clients (like Claude Deskto
 - JSON-RPC message handling
 - MCP protocol implementation
 - REST API proxy service
-- STDIO support for process-based communication
+- STDIO server support for process-based communication
 
-**When to use**: Building custom integrations or need fine-grained control over the MCP implementation.
+**When to use**: Hosting Mcpify as a stdio server, building custom integrations, or needing fine-grained control over the MCP implementation.
 
 **Summerdawn.Mcpify.AspNetCore (ASP.NET Core Integration)**
 - HTTP endpoint mapping
 - ASP.NET Core middleware
 - Easy integration with existing web apps
 
-**When to use**: Hosting Mcpify in your ASP.NET Core application (most common scenario).
+**When to use**: Hosting Mcpify as an http server, or integrating into an ASP.NET Core application.
 
 **Summerdawn.Mcpify.Server (Standalone Server)**
 - Available as a dotnet tool: `dotnet tool install -g Summerdawn.Mcpify.Server`
@@ -97,7 +96,7 @@ mcpify-server --mode stdio
 
 ### As a Standalone Binary
 
-Download pre-built binaries from [GitHub Releases](https://github.com/summerdawn-ai/mcpify/releases) for:
+Download pre-built binaries from [GitHub](https://github.com/summerdawn-ai/mcpify/releases) for:
 - Windows (x64, ARM64)
 - Linux (x64, ARM64)
 - macOS (x64, ARM64)
@@ -112,9 +111,9 @@ dotnet add package Summerdawn.Mcpify.AspNetCore
 
 ## Configuration
 
-### McpifyOptions Structure
+### Structure
 
-Configuration is organized into several sections:
+Mcpify configuration is organized into several sections:
 
 ```json
 {
@@ -266,12 +265,6 @@ builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify"));
 
 This keeps your tool definitions environment-independent and version-controllable.
 
-### OpenAPI/Swagger Integration
-
-For REST APIs with OpenAPI specifications, see Microsoft's documentation on [Swagger/OpenAPI](https://learn.microsoft.com/en-us/aspnet/core/tutorials/web-api-help-pages-using-swagger).
-
-## Agent-Assisted Workflow
-
 ### Generating Mappings from OpenAPI Specs
 
 Use an AI agent to convert OpenAPI/Swagger specifications into Mcpify mappings:
@@ -333,23 +326,39 @@ OpenAPI Spec:
 }
 ```
 
-### Why Use Separate mappings.json?
-
-- **Environment Independence**: Same tool definitions work across dev, staging, production
-- **Version Control**: Track tool changes separately from environment config
-- **Reusability**: Share mappings across different deployment scenarios
-- **Clarity**: Cleaner separation of concerns
-
-## Limitations
-
-- **No Streaming Support**: Responses must be complete; streaming responses are not supported
-- **No Server-Sent Events (SSE)**: Only request-response patterns are supported
-- **JSON Only**: Binary data, file uploads, and non-JSON content types are not supported
-- **Synchronous Only**: All REST calls are synchronous; no async/await patterns in mappings
-
 ## Quick Start
 
-### For Library Users (ASP.NET Core)
+### For Library Users
+
+**Stdio:**
+
+```csharp
+// Program.cs
+var builder = Host.CreateApplicationBuilder(args);
+
+// Load tool mappings
+builder.Configuration.AddJsonFile("mappings.json");
+
+// Add Mcpify services
+builder.Services.AddMcpify(builder.Configuration.GetSection("Mcpify"));
+
+// Send all console logging output to stderr so that it doesn't interfere with MCP stdio traffic.
+builder.Logging.AddConsole(options =>
+{
+    options.LogToStandardErrorThreshold = LogLevel.Trace;
+});
+
+var app = builder.Build();
+
+// Use stdio MCP proxy.
+app.UseMcpify();
+
+a..Run();
+```
+
+See [Summerdawn.Mcpify README](src/Summerdawn.Mcpify/README.md) for detailed scenarios.
+
+**ASP.NET Core:**
 
 ```csharp
 // Program.cs
@@ -392,7 +401,7 @@ dotnet build
 
 See [Summerdawn.Mcpify.Server README](src/Summerdawn.Mcpify.Server/README.md) for complete documentation.
 
-## Using with MCP Clients
+## Using Mcpify with MCP Clients
 
 ### VS Code (.mcp.json)
 
@@ -450,6 +459,12 @@ Mcpify supports both transport modes:
 
 Configure according to your client's requirements. All clients receive the same MCP protocol implementation.
 
+## Limitations
+
+- **No Streaming Support**: Responses must be complete; streaming responses are not supported
+- **No Server-Sent Events (SSE)**: Only request-response patterns are supported
+- **JSON Only**: Binary data, file uploads, and non-JSON content types are not supported
+
 ## Links
 
 ### Documentation
@@ -459,8 +474,8 @@ Configure according to your client's requirements. All clients receive the same 
 
 ### Downloads
 - [GitHub Releases](https://github.com/summerdawn-ai/mcpify/releases) - Standalone server binaries
-- [NuGet: Summerdawn.Mcpify](https://www.nuget.org/packages/Summerdawn.Mcpify) *(coming soon)*
-- [NuGet: Summerdawn.Mcpify.AspNetCore](https://www.nuget.org/packages/Summerdawn.Mcpify.AspNetCore) *(coming soon)*
+- [NuGet: Summerdawn.Mcpify](https://www.nuget.org/packages/Summerdawn.Mcpify)
+- [NuGet: Summerdawn.Mcpify.AspNetCore](https://www.nuget.org/packages/Summerdawn.Mcpify.AspNetCore)
 
 ### Resources
 - [Model Context Protocol Specification](https://modelcontextprotocol.io)

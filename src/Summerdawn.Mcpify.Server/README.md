@@ -1,8 +1,12 @@
 # Summerdawn.Mcpify.Server
 
-Standalone MCP server that proxies requests to REST APIs without requiring any code.
+Command-line Mcpify server with stdio and http support.
+
+Mcpify is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.
 
 ## Overview
+
+Mcpify enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoint mappings in JSON, and Mcpify translates requests between MCP clients and your REST service.
 
 Mcpify Server is a ready-to-run MCP (Model Context Protocol) server that:
 

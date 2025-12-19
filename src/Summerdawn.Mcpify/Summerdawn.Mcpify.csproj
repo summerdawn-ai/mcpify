@@ -17,7 +17,7 @@
   <!-- NuGet properties -->
   <PropertyGroup>
     <PackageId>Summerdawn.Mcpify</PackageId>
-    <Description>Core library for Mcpify MCP-to-REST proxy with tool definitions, validation, and REST proxy services.</Description>
+    <Description>Mcpify is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

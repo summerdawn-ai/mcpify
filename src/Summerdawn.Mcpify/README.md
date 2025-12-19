@@ -1,15 +1,17 @@
 # Summerdawn.Mcpify
 
-Core library providing MCP (Model Context Protocol) implementation and REST API proxy functionality.
+Mcpify is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.
 
 ## Overview
+
+Mcpify enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoint mappings in JSON, and Mcpify translates requests between MCP clients and your REST service.
 
 This package provides the foundational components for building MCP servers that proxy requests to REST APIs:
 
 - **JSON-RPC 2.0 message handling** - Parse and dispatch MCP protocol messages
 - **MCP protocol implementation** - Server info, tool listing, and tool execution
 - **REST API proxy service** - HTTP client with parameter interpolation
-- **STDIO support** - Process-based communication via `IStdio` abstraction
+- **STDIO support** - Process-based communication via stdio
 
 ### When to Use This Package
 
@@ -19,7 +21,7 @@ Use `Summerdawn.Mcpify` when you need:
 - Integration with existing service architectures
 - STDIO-based communication for process integration
 
-**Most users should use `Summerdawn.Mcpify.AspNetCore` instead**, which provides easier integration with ASP.NET Core applications.
+**Most users should use `Summerdawn.Mcpify.AspNetCore` instead**, which provides http support using ASP.NET Core.
 
 ## Installation
 
