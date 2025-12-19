@@ -1,6 +1,10 @@
 using System.CommandLine;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
+using Summerdawn.Mcpifier.Configuration;
 using Summerdawn.Mcpifier.DependencyInjection;
+using Summerdawn.Mcpifier.Services;
 
 namespace Summerdawn.Mcpifier.Server;
 
@@ -29,7 +33,7 @@ public class Program
         {
             Description = "The server mode to use.",
             Required = true
-        }.AcceptOnlyFromAmong("http", "stdio");
+        }.AcceptOnlyFromAmong("http", "stdio", "mappings");
 
         var rootCommand = new RootCommand("Mcpifier - an MCP-to-REST gateway that can run in HTTP or stdio mode")
         {
@@ -55,6 +59,12 @@ public class Program
 
     private static void MainWithMode(string[] args, string mode)
     {
+        if (mode == "mappings")
+        {
+            GenerateMappingsFromSwagger();
+            return;
+        }
+
         if (mode == "http")
         {
             WebApplication app;
@@ -120,6 +130,70 @@ public class Program
             }
 
             app.Run();
+        }
+    }
+
+    private static void GenerateMappingsFromSwagger()
+    {
+        string swaggerFilePath = Path.Combine(Directory.GetCurrentDirectory(), "swagger.json");
+        string outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "mappings.json");
+
+        // Create a logger factory for the converter
+        using var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.AddConsole();
+            builder.SetMinimumLevel(LogLevel.Information);
+        });
+
+        var logger = loggerFactory.CreateLogger<SwaggerToMappingConverter>();
+        var converter = new SwaggerToMappingConverter(logger);
+
+        try
+        {
+            Console.WriteLine($"Reading swagger.json from: {swaggerFilePath}");
+
+            // Convert swagger to tools
+            var tools = converter.ConvertAsync(swaggerFilePath).GetAwaiter().GetResult();
+
+            Console.WriteLine($"Successfully converted {tools.Count} operations to tools");
+
+            // Create the mappings structure
+            var mappingsRoot = new
+            {
+                Mcpifier = new McpifierOptions
+                {
+                    Tools = tools
+                }
+            };
+
+            // Serialize to JSON with proper formatting
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+
+            string json = JsonSerializer.Serialize(mappingsRoot, options);
+
+            // Write to file
+            File.WriteAllText(outputFilePath, json);
+
+            Console.WriteLine($"Successfully wrote mappings.json to: {outputFilePath}");
+            Console.WriteLine($"Generated {tools.Count} tool(s)");
+        }
+        catch (FileNotFoundException ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Please ensure swagger.json exists in the current directory: {Directory.GetCurrentDirectory()}");
+            Environment.Exit(1);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error generating mappings: {ex.Message}");
+            Console.Error.WriteLine(ex.StackTrace);
+            Environment.Exit(1);
         }
     }
 }
