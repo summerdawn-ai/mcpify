@@ -33,7 +33,7 @@ public class McpifyOptions
     public List<ProxyToolDefinition> Tools { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets the authentication configuration.
+    /// Gets or sets the authorization configuration.
     /// </summary>
     public McpifyAuthorizationSection Authorization { get; set; } = new();
 }
