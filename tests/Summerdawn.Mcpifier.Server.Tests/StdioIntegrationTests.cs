@@ -43,8 +43,8 @@ public class StdioIntegrationTests
         // Replace IStdio with TestStdio
         builder.Services.AddSingleton<IStdio>(testStdio);
         
-        // Replace RestProxyService HttpClient with mock handler
-        builder.Services.AddHttpClient<RestProxyService>((sp, client) =>
+        // Replace RestApiService HttpClient with mock handler
+        builder.Services.AddHttpClient<RestApiService>((sp, client) =>
         {
             client.BaseAddress = new Uri("http://example.com");
         })

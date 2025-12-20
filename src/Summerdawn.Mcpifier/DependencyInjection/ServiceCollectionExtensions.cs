@@ -43,7 +43,7 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds Mcpifier proxy, JSON-RPC handlers, and stdio server.
+    /// Adds REST API service, JSON-RPC handlers, and stdio server.
     /// </summary>
     private static McpifierBuilder AddMcpifierCore(this IServiceCollection services)
     {
@@ -51,7 +51,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IStdio, ConsoleStdio>();
 
         // Add REST API http client.
-        services.AddHttpClient<RestProxyService>((provider, client) =>
+        services.AddHttpClient<RestApiService>((provider, client) =>
         {
             var options = provider.GetRequiredService<IOptions<McpifierOptions>>();
             var baseAddress = GetBaseAddress(provider);
@@ -76,7 +76,7 @@ public static class ServiceCollectionExtensions
 
         services.AddTransient<Func<string, IRpcHandler?>>(serviceProvider => serviceProvider.GetKeyedService<IRpcHandler>);
 
-        // Add stdio MCP proxy.
+        // Add stdio MCP server.
         services.AddSingleton<McpStdioServer>();
         services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<McpStdioServer>());
 

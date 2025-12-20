@@ -1,6 +1,6 @@
 # Mcpifier
 
-Mcpifier is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.
+Mcpifier is a zero-code MCP (Model Context Protocol) gateway that exposes an existing REST API as an MCP server.
 
 ## Overview
 
@@ -27,7 +27,7 @@ Mcpifier enables you to expose REST APIs as MCP tools without writing any code. 
 
 ## Repository Structure
 
-- **[/src/Summerdawn.Mcpifier](src/Summerdawn.Mcpifier/README.md)** - Core library providing MCP protocol implementation, JSON-RPC handlers, and REST proxy service
+- **[/src/Summerdawn.Mcpifier](src/Summerdawn.Mcpifier/README.md)** - Core library providing MCP protocol implementation, JSON-RPC handlers, and REST API service
 - **[/src/Summerdawn.Mcpifier.AspNetCore](src/Summerdawn.Mcpifier.AspNetCore/README.md)** - ASP.NET Core integration for hosting Mcpifier in your web applications
 - **[/src/Summerdawn.Mcpifier.Server](src/Summerdawn.Mcpifier.Server/README.md)** - Standalone server for running Mcpifier without coding
 - **/tests** - Test projects for all libraries
@@ -44,8 +44,8 @@ Mcpifier enables you to expose REST APIs as MCP tools without writing any code. 
 ```
 ┌─────────────┐         ┌─────────────┐         ┌─────────────┐
 │             │   MCP   │             │   HTTP  │             │
-│ MCP Client  │────────▶│   Mcpifier    │────────▶│  REST API   │
-│ (Claude,    │◀────────│   Proxy     │◀────────│             │
+│ MCP Client  │────────▶│   Mcpifier  │────────▶│  REST API   │
+│ (Claude,    │◀────────│   Gateway   │◀────────│             │
 │  VS Code)   │         │             │         │             │
 └─────────────┘         └─────────────┘         └─────────────┘
 ```
@@ -55,7 +55,7 @@ Mcpifier enables you to expose REST APIs as MCP tools without writing any code. 
 **Summerdawn.Mcpifier (Core Library)**
 - JSON-RPC message handling
 - MCP protocol implementation
-- REST API proxy service
+- REST API service
 - STDIO server support for process-based communication
 
 **When to use**: Hosting Mcpifier as a stdio server, building custom integrations, or needing fine-grained control over the MCP implementation.
@@ -555,7 +555,7 @@ builder.Logging.AddConsole(options =>
 
 var app = builder.Build();
 
-// Use stdio MCP proxy.
+// Use stdio MCP gateway
 app.UseMcpifier();
 
 app.Run();

@@ -3,7 +3,7 @@ using Summerdawn.Mcpifier.Models;
 namespace Summerdawn.Mcpifier.Configuration;
 
 /// <summary>
-/// Configuration options for Mcpifier MCP server.
+/// Configuration options for Mcpifier.
 /// </summary>
 public class McpifierOptions
 {
@@ -28,9 +28,9 @@ public class McpifierOptions
     public string? Instructions { get; set; }
 
     /// <summary>
-    /// Gets or sets the list of proxy tool definitions.
+    /// Gets or sets the list of tool definitions.
     /// </summary>
-    public List<ProxyToolDefinition> Tools { get; set; } = [];
+    public List<McpifierToolMapping> Tools { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the authorization configuration.

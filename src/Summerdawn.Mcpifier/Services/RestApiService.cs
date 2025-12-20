@@ -7,9 +7,9 @@ using Summerdawn.Mcpifier.Configuration;
 namespace Summerdawn.Mcpifier.Services;
 
 /// <summary>
-/// Service for executing REST API calls as proxy for MCP tools.
+/// Service for executing MCP tools as REST API calls.
 /// </summary>
-public class RestProxyService(HttpClient httpClient, ILogger<RestProxyService> logger)
+public class RestApiService(HttpClient httpClient, ILogger<RestApiService> logger)
 {
     private static readonly Regex PlaceholderRegex = new Regex(@"\{(\w+)\}");
 
@@ -20,7 +20,7 @@ public class RestProxyService(HttpClient httpClient, ILogger<RestProxyService> l
     /// <param name="arguments">The arguments to interpolate into the REST API call.</param>
     /// <param name="forwardedHeaders">HTTP headers to forward to the REST API.</param>
     /// <returns>A tuple containing success status, HTTP status code, and response body.</returns>
-    public async Task<(bool success, int statusCode, string responseBody)> ExecuteToolAsync(ProxyToolDefinition tool, Dictionary<string, JsonElement> arguments, Dictionary<string, string> forwardedHeaders)
+    public async Task<(bool success, int statusCode, string responseBody)> ExecuteToolAsync(McpifierToolMapping tool, Dictionary<string, JsonElement> arguments, Dictionary<string, string> forwardedHeaders)
     {
         // Build the URL with path interpolation
         var path = InterpolatePath(tool.Rest.Path, arguments);

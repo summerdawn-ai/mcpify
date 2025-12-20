@@ -31,7 +31,7 @@ public class Program
             Required = true
         }.AcceptOnlyFromAmong("http", "stdio");
 
-        var rootCommand = new RootCommand("Mcpifier - an MCP-to-REST proxy that can run in HTTP or stdio mode")
+        var rootCommand = new RootCommand("Mcpifier - an MCP-to-REST gateway that can run in HTTP or stdio mode")
         {
             modeOption
         };
@@ -66,7 +66,7 @@ public class Program
                 // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
                 builder.Configuration.AddJsonFile("mappings.json", optional: true, reloadOnChange: false);
 
-                // Configure HTTP MCP proxy.
+                // Configure HTTP MCP gateway.
                 builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier")).AddAspNetCore();
 
                 // Configure CORS to allow any connection.
@@ -79,7 +79,7 @@ public class Program
                 app.UseRouting();
                 app.UseCors();
 
-                // Use HTTP MCP proxy.
+                // Use HTTP MCP gateway.
                 app.MapMcpifier();
             }
             catch (Exception ex)
@@ -100,7 +100,7 @@ public class Program
                 // Set DOTNET_CONTENTROOT environment variable if the file is _not_ in the current working directory.
                 builder.Configuration.AddJsonFile("mappings.json", optional: true, reloadOnChange: false);
 
-                // Configure stdio MCP proxy.
+                // Configure stdio MCP gateway.
                 builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
 
                 // Send all console logging output to stderr so that it doesn't interfere with MCP stdio traffic.
@@ -111,7 +111,7 @@ public class Program
 
                 app = builder.Build();
 
-                // Use stdio MCP proxy.
+                // Use stdio MCP gateway.
                 app.UseMcpifier();
             }
             catch (Exception ex)

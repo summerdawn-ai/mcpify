@@ -3,9 +3,9 @@ using Summerdawn.Mcpifier.Models;
 namespace Summerdawn.Mcpifier.Configuration;
 
 /// <summary>
-/// Defines a proxy tool that maps an MCP tool to a REST API endpoint.
+/// Defines a mapping from an MCP tool to a REST API endpoint.
 /// </summary>
-public class ProxyToolDefinition
+public class McpifierToolMapping
 {
     /// <summary>
     /// Gets or sets the MCP tool definition.

@@ -2,7 +2,7 @@
 
 Ready-to-run MCP server with stdio and HTTP support. 
 
-Mcpifier is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.
+Mcpifier is a zero-code MCP (Model Context Protocol) gateway that exposes an existing REST API as an MCP server.
 
 ## Overview
 

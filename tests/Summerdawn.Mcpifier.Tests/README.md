@@ -1,17 +1,17 @@
 # Summerdawn.Mcpifier.Tests
 
-This project contains unit tests for the core Mcpifier library, focusing on JSON-RPC handlers and REST proxy functionality.
+This project contains unit tests for the core Mcpifier library, focusing on JSON-RPC handlers and REST API service functionality.
 
 ## Test Structure
 
 ### Handler Tests (`McpToolsCallRpcHandlerTests.cs`)
 - Tests the `McpToolsCallRpcHandler` which processes MCP `tools/call` requests
 - Verifies tool lookup, argument validation, and error handling
-- Uses real `RestProxyService` with mocked `HttpClient` for HTTP call verification
+- Uses real `RestApiService` with mocked `HttpClient` for HTTP call verification
 - Tests successful and error scenarios with structured content responses
 
-### REST Proxy Service Tests (`RestProxyServiceTests.cs`)
-- Tests the `RestProxyService` which proxies MCP tool calls to REST APIs
+### REST Api Service Tests (`RestApiServiceTests.cs`)
+- Tests the `RestApiService` which proxies MCP tool calls to REST APIs
 - Verifies path, query, and body parameter interpolation
 - Tests URL encoding, special character handling, and missing parameter scenarios
 - Covers edge cases like nested objects and combined interpolation
@@ -33,8 +33,8 @@ dotnet test
 # Run only handler tests
 dotnet test --filter "FullyQualifiedName~McpToolsCallRpcHandlerTests"
 
-# Run only REST proxy tests
-dotnet test --filter "FullyQualifiedName~RestProxyServiceTests"
+# Run only REST API service tests
+dotnet test --filter "FullyQualifiedName~RestApiServiceTests"
 
 # Run with detailed output
 dotnet test --logger "console;verbosity=detailed"
@@ -48,7 +48,7 @@ dotnet test --logger "console;verbosity=detailed"
 - **REST API Error**: Verifies error responses are wrapped correctly
 - **REST API Success**: Verifies successful responses with structured JSON content
 
-### RestProxyServiceTests
+### RestApiServiceTests
 - **Path Interpolation**: Basic parameter substitution and URL encoding
 - **Query Interpolation**: Multiple parameters and missing argument handling
 - **Body Interpolation**: JSON values, nested objects, and null handling
@@ -58,7 +58,7 @@ dotnet test --logger "console;verbosity=detailed"
 
 Tests use real service instances with mocked HTTP infrastructure:
 
-1. **Real Service Instances**: Uses actual `RestProxyService` and `McpToolsCallRpcHandler` instances
+1. **Real Service Instances**: Uses actual `RestApiService` and `McpToolsCallRpcHandler` instances
 2. **Mocked HTTP Layer**: Uses `MockHttpMessageHandler` to control HTTP responses
 3. **Request Verification**: Captures and verifies actual HTTP requests sent by the service
 4. **Edge Case Coverage**: Tests special characters, missing parameters, and type conversions
@@ -77,7 +77,7 @@ var mockHandler = new MockHttpMessageHandler((request, cancellationToken) =>
 });
 
 var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
-var service = new RestProxyService(httpClient, mockLogger.Object);
+var service = new RestApiService(httpClient, mockLogger.Object);
 
 // Act
 var result = await service.ExecuteToolAsync(tool, arguments, []);

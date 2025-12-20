@@ -11,7 +11,7 @@ namespace Summerdawn.Mcpifier.Handlers;
 /// <summary>
 /// Handles the MCP tools/call request.
 /// </summary>
-public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IOptions<McpifierOptions> options, ILogger<McpToolsCallRpcHandler> logger, IHttpContextAccessor? httpContextAccessor = null) : IRpcHandler
+public sealed class McpToolsCallRpcHandler(RestApiService restApiService, IOptions<McpifierOptions> options, ILogger<McpToolsCallRpcHandler> logger, IHttpContextAccessor? httpContextAccessor = null) : IRpcHandler
 {
     /// <inheritdoc/>
     public async Task<JsonRpcResponse> HandleAsync(JsonRpcRequest request, CancellationToken cancellationToken = default)
@@ -38,7 +38,7 @@ public sealed class McpToolsCallRpcHandler(RestProxyService proxyService, IOptio
 
         var forwardedHeaders = GetForwardedHeaders(httpContextAccessor?.HttpContext?.Request);
 
-        var (success, statusCode, responseBody) = await proxyService.ExecuteToolAsync(tool, parameters.Arguments, forwardedHeaders);
+        var (success, statusCode, responseBody) = await restApiService.ExecuteToolAsync(tool, parameters.Arguments, forwardedHeaders);
         if (!success)
         {
             logger.LogWarning("REST API returned error {StatusCode} for tool {ToolName}", statusCode, parameters.Name);

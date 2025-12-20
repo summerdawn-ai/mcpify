@@ -22,12 +22,12 @@ public class McpToolsCallRpcHandlerTests
         var options = CreateOptions([]);
         var mockHandler = new MockHttpMessageHandler((request, cancellationToken) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
         var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
-        var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var proxyService = new RestProxyService(httpClient, mockLogger.Object);
+        var mockLogger = new Mock<ILogger<RestApiService>>();
+        var restApiService = new RestApiService(httpClient, mockLogger.Object);
         var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
         
         var handler = new McpToolsCallRpcHandler(
-            proxyService,
+            restApiService,
             options,
             mockHandlerLogger.Object,
             null);
@@ -51,12 +51,12 @@ public class McpToolsCallRpcHandlerTests
         var options = CreateOptions([tool]);
         var mockHandler = new MockHttpMessageHandler((request, cancellationToken) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
         var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
-        var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var proxyService = new RestProxyService(httpClient, mockLogger.Object);
+        var mockLogger = new Mock<ILogger<RestApiService>>();
+        var restApiService = new RestApiService(httpClient, mockLogger.Object);
         var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
         
         var handler = new McpToolsCallRpcHandler(
-            proxyService,
+            restApiService,
             options,
             mockHandlerLogger.Object,
             null);
@@ -83,12 +83,12 @@ public class McpToolsCallRpcHandlerTests
             Content = new StringContent("Internal Server Error")
         }));
         var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
-        var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var proxyService = new RestProxyService(httpClient, mockLogger.Object);
+        var mockLogger = new Mock<ILogger<RestApiService>>();
+        var restApiService = new RestApiService(httpClient, mockLogger.Object);
         var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
         
         var handler = new McpToolsCallRpcHandler(
-            proxyService,
+            restApiService,
             options,
             mockHandlerLogger.Object,
             null);
@@ -126,12 +126,12 @@ public class McpToolsCallRpcHandlerTests
             Content = new StringContent(jsonResponse)
         }));
         var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
-        var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var proxyService = new RestProxyService(httpClient, mockLogger.Object);
+        var mockLogger = new Mock<ILogger<RestApiService>>();
+        var restApiService = new RestApiService(httpClient, mockLogger.Object);
         var mockHandlerLogger = new Mock<ILogger<McpToolsCallRpcHandler>>();
         
         var handler = new McpToolsCallRpcHandler(
-            proxyService,
+            restApiService,
             options,
             mockHandlerLogger.Object,
             null);
@@ -164,7 +164,7 @@ public class McpToolsCallRpcHandlerTests
         Assert.Equal("success", statusProp.GetString());
     }
 
-    private static IOptions<McpifierOptions> CreateOptions(List<ProxyToolDefinition> tools)
+    private static IOptions<McpifierOptions> CreateOptions(List<McpifierToolMapping> tools)
     {
         var options = new McpifierOptions
         {
@@ -173,9 +173,9 @@ public class McpToolsCallRpcHandlerTests
         return Options.Create(options);
     }
 
-    private static ProxyToolDefinition CreateTestTool(string name, string[]? requiredProperties = null)
+    private static McpifierToolMapping CreateTestTool(string name, string[]? requiredProperties = null)
     {
-        return new ProxyToolDefinition
+        return new McpifierToolMapping
         {
             Mcp = new McpToolDefinition
             {

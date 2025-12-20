@@ -13,7 +13,7 @@ using Summerdawn.Mcpifier.Services;
 namespace Summerdawn.Mcpifier.Tests;
 
 [SuppressMessage("ReSharper", "MethodSupportsCancellation")]
-public class RestProxyServiceTests
+public class RestApiServiceTests
 {
     [Fact]
     public async Task ExecuteToolAsync_InterpolatesPathParameters()
@@ -30,10 +30,10 @@ public class RestProxyServiceTests
         });
 
         var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
-        var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var service = new RestProxyService(httpClient, mockLogger.Object);
+        var mockLogger = new Mock<ILogger<RestApiService>>();
+        var service = new RestApiService(httpClient, mockLogger.Object);
 
-        var tool = new ProxyToolDefinition
+        var tool = new McpifierToolMapping
         {
             Mcp = new McpToolDefinition
             {
@@ -77,10 +77,10 @@ public class RestProxyServiceTests
         });
 
         var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
-        var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var service = new RestProxyService(httpClient, mockLogger.Object);
+        var mockLogger = new Mock<ILogger<RestApiService>>();
+        var service = new RestApiService(httpClient, mockLogger.Object);
 
-        var tool = new ProxyToolDefinition
+        var tool = new McpifierToolMapping
         {
             Mcp = new McpToolDefinition
             {
@@ -123,10 +123,10 @@ public class RestProxyServiceTests
         });
 
         var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
-        var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var service = new RestProxyService(httpClient, mockLogger.Object);
+        var mockLogger = new Mock<ILogger<RestApiService>>();
+        var service = new RestApiService(httpClient, mockLogger.Object);
 
-        var tool = new ProxyToolDefinition
+        var tool = new McpifierToolMapping
         {
             Mcp = new McpToolDefinition
             {
@@ -172,10 +172,10 @@ public class RestProxyServiceTests
         });
 
         var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
-        var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var service = new RestProxyService(httpClient, mockLogger.Object);
+        var mockLogger = new Mock<ILogger<RestApiService>>();
+        var service = new RestApiService(httpClient, mockLogger.Object);
 
-        var tool = new ProxyToolDefinition
+        var tool = new McpifierToolMapping
         {
             Mcp = new McpToolDefinition
             {
@@ -219,10 +219,10 @@ public class RestProxyServiceTests
         });
 
         var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
-        var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var service = new RestProxyService(httpClient, mockLogger.Object);
+        var mockLogger = new Mock<ILogger<RestApiService>>();
+        var service = new RestApiService(httpClient, mockLogger.Object);
 
-        var tool = new ProxyToolDefinition
+        var tool = new McpifierToolMapping
         {
             Mcp = new McpToolDefinition
             {
@@ -268,10 +268,10 @@ public class RestProxyServiceTests
         });
 
         var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
-        var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var service = new RestProxyService(httpClient, mockLogger.Object);
+        var mockLogger = new Mock<ILogger<RestApiService>>();
+        var service = new RestApiService(httpClient, mockLogger.Object);
 
-        var tool = new ProxyToolDefinition
+        var tool = new McpifierToolMapping
         {
             Mcp = new McpToolDefinition
             {
@@ -320,10 +320,10 @@ public class RestProxyServiceTests
         });
 
         var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
-        var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var service = new RestProxyService(httpClient, mockLogger.Object);
+        var mockLogger = new Mock<ILogger<RestApiService>>();
+        var service = new RestApiService(httpClient, mockLogger.Object);
 
-        var tool = new ProxyToolDefinition
+        var tool = new McpifierToolMapping
         {
             Mcp = new McpToolDefinition
             {
@@ -372,10 +372,10 @@ public class RestProxyServiceTests
         });
 
         var httpClient = new HttpClient(mockHandler) { BaseAddress = new Uri("http://example.com") };
-        var mockLogger = new Mock<ILogger<RestProxyService>>();
-        var service = new RestProxyService(httpClient, mockLogger.Object);
+        var mockLogger = new Mock<ILogger<RestApiService>>();
+        var service = new RestApiService(httpClient, mockLogger.Object);
 
-        var tool = new ProxyToolDefinition
+        var tool = new McpifierToolMapping
         {
             Mcp = new McpToolDefinition
             {

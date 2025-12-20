@@ -1,16 +1,16 @@
 # Summerdawn.Mcpifier
 
-Mcpifier is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.
+Mcpifier is a zero-code MCP (Model Context Protocol) gateway that exposes an existing REST API as an MCP server.
 
 ## Overview
 
 Mcpifier enables you to expose REST APIs as MCP tools without writing any code. Simply configure your API endpoint mappings in JSON, and Mcpifier translates requests between MCP clients and your REST service.
 
-This package provides the foundational components for building MCP servers that proxy requests to REST APIs:
+This package provides the foundational components for building gateways from stdio MCP clients to REST APIs:
 
 - **JSON-RPC 2.0 message handling** - Parse and dispatch MCP protocol messages
 - **MCP protocol implementation** - Server info, tool listing, and tool execution
-- **REST API proxy service** - HTTP client with parameter interpolation
+- **REST API service** - HTTP client with parameter interpolation
 - **STDIO support** - Process-based communication via stdio
 
 ### When to Use This Package
@@ -117,7 +117,7 @@ See the [main README Configuration section](https://github.com/summerdawn-ai/mcp
 
 ### Key Classes and Services
 
-**RestProxyService**
+**RestApiService**
 - Executes HTTP requests to REST APIs
 - Handles parameter interpolation
 - Manages headers (default and forwarded)

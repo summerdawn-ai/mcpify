@@ -8,7 +8,7 @@ This project contains integration tests for the Mcpifier server, demonstrating t
 - Uses `WebApplicationFactory<ProgramHttp>` to host the server in-process
 - Tests MCP JSON-RPC endpoints (tools/list, tools/call)
 - Mocks outbound REST calls using custom `HttpMessageHandler`
-- Verifies request/response handling and REST proxy behavior
+- Verifies request/response handling and REST service behavior
 
 ### Stdio Integration Tests (`StdioIntegrationTests.cs`)
 - Demonstrates the `IStdio` abstraction for injectable stdio streams

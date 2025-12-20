@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 
 using Summerdawn.Mcpifier.Configuration;
 using Summerdawn.Mcpifier.Services;

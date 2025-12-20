@@ -1,6 +1,6 @@
 # Summerdawn.Mcpifier.AspNetCore
 
-ASP.NET Core integration for Mcpifier. Mcpifier is a zero-code MCP (Model Context Protocol) proxy that exposes an existing REST API as an MCP server.
+ASP.NET Core integration for Mcpifier. Mcpifier is a zero-code MCP (Model Context Protocol) gateway that exposes an existing REST API as an MCP server.
 
 ## Overview
 
@@ -102,7 +102,7 @@ builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"))
 
 builder.Services.Configure<McpifierOptions>(options =>
 {
-    options.Rest.BaseAddress = "/"; // Proxy to self
+    options.Rest.BaseAddress = "/"; // Forward to self
 });
 
 var app = builder.Build();

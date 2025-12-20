@@ -26,9 +26,9 @@ public class HttpIntegrationTests(McpifierServerFactory factory) : IClassFixture
         {
             builder.ConfigureServices(services =>
             {
-                // Configure the HttpClient for RestProxyService with a mock handler
+                // Configure the HttpClient for RestApiService with a mock handler
                 // This overrides the handler configuration from the main application
-                services.AddHttpClient<RestProxyService>((sp, client) =>
+                services.AddHttpClient<RestApiService>((sp, client) =>
                 {
                     client.BaseAddress = new Uri("http://example.com");
                 })
@@ -78,9 +78,9 @@ public class HttpIntegrationTests(McpifierServerFactory factory) : IClassFixture
         {
             builder.ConfigureServices(services =>
             {
-                // Configure the HttpClient for RestProxyService with a mock handler
+                // Configure the HttpClient for RestApiService with a mock handler
                 // This overrides the handler configuration from the main application
-                services.AddHttpClient<RestProxyService>((sp, client) =>
+                services.AddHttpClient<RestApiService>((sp, client) =>
                 {
                     client.BaseAddress = new Uri("http://example.com");
                 })

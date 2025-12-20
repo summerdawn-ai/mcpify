@@ -9,7 +9,7 @@
     <RepositoryUrl>https://github.com/summerdawn-ai/mcpifier</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/summerdawn-ai/mcpifier</PackageProjectUrl>
-    <PackageTags>mcp;model-context-protocol;rest-api;proxy</PackageTags>
+    <PackageTags>mcp;model-context-protocol;mcpify;rest;rest-api;proxy;gateway</PackageTags>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
