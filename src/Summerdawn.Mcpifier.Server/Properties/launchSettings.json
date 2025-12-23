@@ -3,10 +3,19 @@
     "http": {
       "commandName": "Project",
       "commandLineArgs": "--mode http",
-      "externalUrlConfiguration": true, // Use "Kestrel" section from appsettings
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       },
+      "externalUrlConfiguration": true, // Use "Kestrel" section from appsettings
+      "dotnetRunMessages": true
+    },
+    "http --swagger": {
+      "commandName": "Project",
+      "commandLineArgs": "--mode http --swagger swagger.json",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "externalUrlConfiguration": true,
       "dotnetRunMessages": true
     },
     "stdio": {

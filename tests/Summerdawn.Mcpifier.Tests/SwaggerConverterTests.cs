@@ -1,3 +1,6 @@
+using System.Text.Encodings.Web;
+using System.Text.Json;
+
 using Microsoft.Extensions.Logging;
 
 using Moq;
@@ -6,10 +9,10 @@ using Summerdawn.Mcpifier.Services;
 
 namespace Summerdawn.Mcpifier.Tests;
 
-public class SwaggerToMappingConverterTests
+public class SwaggerConverterTests
 {
     [Fact]
-    public void Convert_WithValidSwagger_ReturnsToolDefinitions()
+    public async Task Convert_WithValidSwagger_ReturnsToolDefinitions()
     {
         // Arrange
         var converter = CreateConverter();
@@ -48,7 +51,7 @@ public class SwaggerToMappingConverterTests
         """;
 
         // Act
-        var tools = converter.Convert(swaggerJson);
+        var tools = (await converter.ConvertAsync(swaggerJson)).Tools;
 
         // Assert
         Assert.NotNull(tools);
@@ -67,7 +70,7 @@ public class SwaggerToMappingConverterTests
     }
 
     [Fact]
-    public void Convert_WithQueryParameters_BuildsQueryString()
+    public async Task Convert_WithQueryParameters_BuildsQueryString()
     {
         // Arrange
         var converter = CreateConverter();
@@ -113,7 +116,7 @@ public class SwaggerToMappingConverterTests
         """;
 
         // Act
-        var tools = converter.Convert(swaggerJson);
+        var tools = (await converter.ConvertAsync(swaggerJson)).Tools;
 
         // Assert
         Assert.NotNull(tools);
@@ -129,7 +132,7 @@ public class SwaggerToMappingConverterTests
     }
 
     [Fact]
-    public void Convert_WithRequestBody_FlattensProperties()
+    public async Task Convert_WithRequestBody_FlattensProperties()
     {
         // Arrange
         var converter = CreateConverter();
@@ -183,7 +186,7 @@ public class SwaggerToMappingConverterTests
         """;
 
         // Act
-        var tools = converter.Convert(swaggerJson);
+        var tools = (await converter.ConvertAsync(swaggerJson)).Tools;
 
         // Assert
         Assert.NotNull(tools);
@@ -212,7 +215,7 @@ public class SwaggerToMappingConverterTests
     }
 
     [Fact]
-    public void Convert_WithoutOperationId_GeneratesToolNameFromPath()
+    public async Task Convert_WithoutOperationId_GeneratesToolNameFromPath()
     {
         // Arrange
         var converter = CreateConverter();
@@ -239,7 +242,7 @@ public class SwaggerToMappingConverterTests
         """;
 
         // Act
-        var tools = converter.Convert(swaggerJson);
+        var tools = (await converter.ConvertAsync(swaggerJson)).Tools;
 
         // Assert
         Assert.NotNull(tools);
@@ -250,7 +253,7 @@ public class SwaggerToMappingConverterTests
     }
 
     [Fact]
-    public void Convert_WithMultipleOperations_ReturnsAllTools()
+    public async Task Convert_WithMultipleOperations_ReturnsAllTools()
     {
         // Arrange
         var converter = CreateConverter();
@@ -323,7 +326,7 @@ public class SwaggerToMappingConverterTests
         """;
 
         // Act
-        var tools = converter.Convert(swaggerJson);
+        var tools = (await converter.ConvertAsync(swaggerJson)).Tools;
 
         // Assert
         Assert.NotNull(tools);
@@ -335,9 +338,9 @@ public class SwaggerToMappingConverterTests
         Assert.Contains(tools, t => t.Mcp.Name == "delete_user" && t.Rest.Method == "DELETE");
     }
 
-    private static SwaggerToMappingConverter CreateConverter()
+    private static SwaggerConverter CreateConverter()
     {
-        var mockLogger = new Mock<ILogger<SwaggerToMappingConverter>>();
-        return new SwaggerToMappingConverter(mockLogger.Object);
+        var mockLogger = new Mock<ILogger<SwaggerConverter>>();
+        return new SwaggerConverter(mockLogger.Object);
     }
 }
