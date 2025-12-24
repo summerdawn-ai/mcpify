@@ -276,18 +276,6 @@ dotnet add package Summerdawn.Mcpifier.AspNetCore
 
 It provides simpler integration with endpoint routing and middleware.
 
-## Configuration
-
-For detailed configuration including: 
-- All configuration settings and their meanings
-- Tool mappings structure
-- Parameter interpolation
-- Authorization scenarios (MCP Authorization, default headers, forwarded headers)
-- Loading from separate files
-- Generating from OpenAPI specs
-
-See the [main README Configuration section](https://github.com/summerdawn-ai/mcpifier#configuration).
-
 ## API Overview
 
 ### Key Classes and Services

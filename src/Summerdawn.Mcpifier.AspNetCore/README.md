@@ -351,55 +351,6 @@ app.MapMcpifier("/api/mcp"); // Custom route
 app.Run();
 ```
 
-## Configuration
-
-This package supports all Mcpifier configuration options.  For complete documentation including: 
-
-- All configuration settings (`BaseAddress`, `DefaultHeaders`, `ForwardedHeaders`, etc.)
-- Authorization scenarios (MCP Authorization, static headers, forwarded headers)
-- Tool mappings structure
-- Parameter interpolation
-
-See the [main README Configuration section](https://github.com/summerdawn-ai/mcpifier#configuration).
-
-### Quick Configuration Examples
-
-**Static API Key:**
-```json
-{
-  "Mcpifier": {
-    "Rest": {
-      "BaseAddress": "https://api.example.com",
-      "DefaultHeaders": {
-        "X-API-Key": "your-api-key-here"
-      }
-    }
-  }
-}
-```
-
-**OAuth with Header Forwarding:**
-```json
-{
-  "Mcpifier": {
-    "Rest": {
-      "BaseAddress": "https://api.example.com",
-      "ForwardedHeaders": {
-        "Authorization": true
-      }
-    },
-    "Authorization": {
-      "RequireAuthorization": true,
-      "ResourceMetadata": {
-        "Resource": "https://mcp.example.com",
-        "AuthorizationServers": [ "https://auth.example.com/oauth/v2.0" ],
-        "ScopesSupported": [ "https://mcp.example.com/access" ]
-      }
-    }
-  }
-}
-```
-
 ## Advanced Configuration
 
 ### Authorization Requirements
