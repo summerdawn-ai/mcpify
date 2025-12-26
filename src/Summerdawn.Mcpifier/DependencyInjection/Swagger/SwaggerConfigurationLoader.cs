@@ -7,15 +7,14 @@ namespace Summerdawn.Mcpifier.DependencyInjection;
 /// Post-configures <see cref="McpifierOptions"/> by loading and merging
 /// tools from Swagger sources registered during application setup.
 /// </summary>
-internal class SwaggerConfigurationLoader(IEnumerable<SwaggerConfigurationSource> sources, SwaggerConverter converter, ILogger<SwaggerConfigurationLoader> logger) : IPostConfigureOptions<McpifierOptions>
+internal class SwaggerConfigurationLoader(IHttpClientFactory httpClientFactory, IEnumerable<SwaggerConfigurationSource> sources, SwaggerConverter converter, ILogger<SwaggerConfigurationLoader> logger) : IPostConfigureOptions<McpifierOptions>
 {
-    private bool hasRun = false;
+    private int hasRun = 0;
 
     public void PostConfigure(string? name, McpifierOptions options)
     {
         // Only run once (IPostConfigureOptions can be called multiple times).
-        if (hasRun) return;
-        hasRun = true;
+        if (Interlocked.CompareExchange(ref hasRun, 1, 0) != 0) return;
 
         foreach (var source in sources)
         {
@@ -81,12 +80,12 @@ internal class SwaggerConfigurationLoader(IEnumerable<SwaggerConfigurationSource
         return null;
     }
 
-    private static async Task<string> LoadSwaggerAsync(string fileNameOrUrl)
+    private async Task<string> LoadSwaggerAsync(string fileNameOrUrl)
     {
         if (Uri.TryCreate(fileNameOrUrl, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
         {
             // Download from URL.
-            using var httpClient = new HttpClient();
+            var httpClient = httpClientFactory.CreateClient();
             return await httpClient.GetStringAsync(uri);
         }
         else

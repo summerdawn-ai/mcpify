@@ -60,7 +60,7 @@ public class Program
         {
             Description = "The server mode to use.",
             Required = true
-        }.AcceptOnlyFromAmong("http", "stdio", "mappings");
+        }.AcceptOnlyFromAmong("http", "stdio");
 
         var swaggerOption = new Option<string>("--swagger")
         {
