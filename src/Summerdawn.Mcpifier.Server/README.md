@@ -171,7 +171,7 @@ mcpifier generate --swagger path/to/swagger.json --output mappings-new.json
 }
 ```
 
-See the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier#tool-mapping) section for details on the tool mapping and the generated JSON file structure.
+See the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier/README.md#tool-mapping) for details on the tool mapping and the generated JSON file structure.
 
 ## Configuring MCP Clients
 
@@ -318,17 +318,17 @@ If your MCP client supports the MCP Authorization protocol, you can enable it in
 2. **No Token Validation**: The command-line server does NOT validate tokens itself - authentication is delegated to the REST API
 3. **Trust Boundary**: The command-line server does not provide a trust boundary - it relies on the REST API to handle authentication and authorization correctly
 
-For more details about authorization, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier#authorization) for stdio mode, and in the [Mcpifier ASP.NET Core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier.AspNetCore#authorization) for HTTP mode.
+For more details about authorization, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier/README.md#authorization) for stdio mode, and in the [Mcpifier ASP.NET Core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier.AspNetCore/README.md#authorization) for HTTP mode.
 
 ## Configuration
 
 The Mcpifier command-line server can be configured by modifying the `appsettings.json` and `mappings.json` files located in the content directory. The content directory can be specified by the `DOTNET_CONTENTROOT` environment variable, and defaults to the current working directory otherwise.
 
-For the full list of settings, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier#configuration).
+For the full list of settings, refer to the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier/README.md#configuration).
 
 ## Tool Mapping
 
-Tool mapping configuration settings and interpolation rules are documented in the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier#tool-mapping).
+Tool mapping configuration settings and interpolation rules are documented in the corresponding section in the [Mcpifier core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier/README.md#tool-mapping).
 
 ## Logging
 
