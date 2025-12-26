@@ -18,7 +18,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     /// </summary>
     /// <param name="swaggerFileNameOrUrl">The file name or URL of the Swagger/OpenAPI specification.</param>
     /// <param name="outputFileName">The output file name, default "mappings.json".</param>
-    public async Task LoadAndConvertAsync(string swaggerFileNameOrUrl, string? outputFileName)
+    public async Task LoadAndConvertAsync(string swaggerFileNameOrUrl, string? outputFileName = null)
     {
         outputFileName ??= "mappings.json";
 
@@ -178,13 +178,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         // Create initial input schema based on request body, if present.
         if (operation.RequestBody?.Content?.TryGetValue("application/json", out var requestBody) == true)
         {
-            var schema = requestBody.Schema;
-
-            // Dereference schema references.
-            if (schema is OpenApiSchemaReference reference)
-            {
-                schema = reference.Target;
-            }
+            var schema = GetDereferencedSchema(requestBody.Schema);
 
             // If the request body is an object, use it as the base of the InputSchema;
             // otherwise, add the request body as a single property "requestBody".
@@ -209,7 +203,9 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
 
         foreach (var param in operation.Parameters ?? [])
         {
-            if (param.Schema is null)
+            var schema = GetDereferencedSchema(param.Schema);
+
+            if (schema is null)
             {
                 // Skip parameters without schema definition.
                 continue;
@@ -217,7 +213,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
 
             // Serialize as not-quite-JSON-Schema v3.0 so we don't get type
             // arrays for nullable types that break our deserialization.
-            string json = await param.Schema!.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
+            string json = await schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_0);
             var propertySchema = JsonSerializer.Deserialize<PropertySchema>(json, JsonRpcAndMcpJsonContext.Default.PropertySchema)!;
 
             // Prefer param description over schema description.
@@ -263,10 +259,12 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         // Build request body template
         if (operation.RequestBody?.Content?.TryGetValue("application/json", out var mediaType) == true)
         {
-            if (mediaType.Schema is { Type: JsonSchemaType.Object, Properties: not null })
+            var schema = GetDereferencedSchema(mediaType.Schema);
+
+            if (schema is { Type: JsonSchemaType.Object, Properties: not null })
             {
                 var bodyParts = new List<string>();
-                foreach (var prop in mediaType.Schema.Properties)
+                foreach (var prop in schema.Properties)
                 {
                     bodyParts.Add($"\"{prop.Key}\": {{{prop.Key}}}");
                 }
@@ -352,5 +350,18 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
             // Read from file.
             return await File.ReadAllTextAsync(fileNameOrUrl);
         }
+    }
+
+    /// <summary>
+    /// Dereferences the specified schema if it is a reference.
+    /// </summary>
+    private static IOpenApiSchema? GetDereferencedSchema(IOpenApiSchema? schema)
+    {
+        while (schema is OpenApiSchemaReference reference)
+        {
+            schema = reference.Target;
+        }
+
+        return schema;
     }
 }
