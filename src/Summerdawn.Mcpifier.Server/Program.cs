@@ -27,15 +27,31 @@ public class Program
             args = ["serve", "--mode=http"];
         }
 
+        // Create global options
+        var settingsOption = new Option<string[]>("--settings")
+        {
+            Description = "Path to a JSON configuration file to load. Can be specified multiple times.",
+            Arity = ArgumentArity.ZeroOrMore,
+            AllowMultipleArgumentsPerToken = false
+        };
+
+        var noDefaultSettingsOption = new Option<bool>("--no-default-settings")
+        {
+            Description = "Do not load the default embedded appsettings.json.",
+            Arity = ArgumentArity.Zero
+        };
+
         // Create "serve" command
-        var serveCommand = CreateServeCommand(args);
+        var serveCommand = CreateServeCommand(settingsOption, noDefaultSettingsOption, args);
 
         // Create "generate" command
-        var generateCommand = CreateGenerateCommand(args);
+        var generateCommand = CreateGenerateCommand(settingsOption, noDefaultSettingsOption, args);
 
-        // Create root command
+        // Create root command with global options
         var rootCommand = new RootCommand("Mcpifier - an MCP-to-REST gateway that can run in HTTP or stdio mode")
         {
+            settingsOption,
+            noDefaultSettingsOption,
             serveCommand,
             generateCommand
         };
@@ -55,7 +71,7 @@ public class Program
         }
     }
 
-    private static Command CreateServeCommand(string[] args)
+    private static Command CreateServeCommand(Option<string[]> settingsOption, Option<bool> noDefaultSettingsOption, string[] args)
     {
         var modeOption = new Option<string>("--mode", "-m")
         {
@@ -72,6 +88,8 @@ public class Program
 
         var serveCommand = new Command("serve", "Start the Mcpifier server in HTTP or stdio mode")
         {
+            settingsOption,
+            noDefaultSettingsOption,
             modeOption,
             swaggerOption
         };
@@ -80,14 +98,16 @@ public class Program
         {
             string mode = parseResult.GetValue(modeOption)!;
             string? swaggerFileNameOrUrl = parseResult.GetValue(swaggerOption);
+            string[]? settingsFiles = parseResult.GetValue(settingsOption);
+            bool noDefaultSettings = parseResult.GetValue(noDefaultSettingsOption);
 
-            await ServeAsync(mode, swaggerFileNameOrUrl, args);
+            await ServeAsync(mode, swaggerFileNameOrUrl, settingsFiles, noDefaultSettings, args);
         });
 
         return serveCommand;
     }
 
-    private static Command CreateGenerateCommand(string[] args)
+    private static Command CreateGenerateCommand(Option<string[]> settingsOption, Option<bool> noDefaultSettingsOption, string[] args)
     {
         var swaggerOption = new Option<string>("--swagger")
         {
@@ -104,6 +124,8 @@ public class Program
 
         var generateCommand = new Command("generate", "Generate tool mappings from a Swagger/OpenAPI specification")
         {
+            settingsOption,
+            noDefaultSettingsOption,
             swaggerOption,
             outputOption
         };
@@ -111,8 +133,10 @@ public class Program
         {
             string swaggerFileNameOrUrl = parseResult.GetValue(swaggerOption)!;
             string? outputFileName = parseResult.GetValue(outputOption);
+            string[]? settingsFiles = parseResult.GetValue(settingsOption);
+            bool noDefaultSettings = parseResult.GetValue(noDefaultSettingsOption);
 
-            await GenerateAsync(swaggerFileNameOrUrl, outputFileName, args);
+            await GenerateAsync(swaggerFileNameOrUrl, outputFileName, settingsFiles, noDefaultSettings, args);
         });
         return generateCommand;
     }
@@ -143,12 +167,30 @@ public class Program
     }
 
     /// <summary>
+    /// Adds custom settings files to the configuration.
+    /// </summary>
+    /// <param name="configurationManager">The configuration manager to add the sources to.</param>
+    /// <param name="settingsFiles">Array of settings file paths to load.</param>
+    private static void AddCustomSettings(ConfigurationManager configurationManager, string[]? settingsFiles)
+    {
+        if (settingsFiles is null || settingsFiles.Length == 0)
+            return;
+
+        foreach (string settingsFile in settingsFiles)
+        {
+            configurationManager.AddJsonFile(settingsFile, optional: false, reloadOnChange: false);
+        }
+    }
+
+    /// <summary>
     /// Starts the Mcpifier server in the specified mode.
     /// </summary>
     /// <param name="mode">The value for the `--mode` option.</param>
     /// <param name="swaggerFileNameOrUrl">The optional value for the `--swagger` option.</param>
+    /// <param name="settingsFiles">The optional values for the `--settings` option.</param>
+    /// <param name="noDefaultSettings">The value for the `--no-default-settings` option.</param>
     /// <param name="args">The collection of command-line arguments.</param>
-    private static async Task ServeAsync(string mode, string? swaggerFileNameOrUrl, string[] args)
+    private static async Task ServeAsync(string mode, string? swaggerFileNameOrUrl, string[]? settingsFiles, bool noDefaultSettings, string[] args)
     {
         if (mode == "http")
         {
@@ -157,8 +199,14 @@ public class Program
             {
                 var builder = WebApplication.CreateBuilder();
 
-                // Load embedded appsettings.json as first configuration source
-                AddEmbeddedAppSettings(builder.Configuration);
+                // Load embedded appsettings.json as first configuration source (unless disabled)
+                if (!noDefaultSettings)
+                {
+                    AddEmbeddedAppSettings(builder.Configuration);
+                }
+
+                // Load custom settings files (after default settings if both are present)
+                AddCustomSettings(builder.Configuration, settingsFiles);
 
                 // Configure HTTP MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier")).AddAspNetCore();
@@ -196,8 +244,14 @@ public class Program
             {
                 var builder = Host.CreateApplicationBuilder(args);
 
-                // Load embedded appsettings.json as first configuration source
-                AddEmbeddedAppSettings(builder.Configuration);
+                // Load embedded appsettings.json as first configuration source (unless disabled)
+                if (!noDefaultSettings)
+                {
+                    AddEmbeddedAppSettings(builder.Configuration);
+                }
+
+                // Load custom settings files (after default settings if both are present)
+                AddCustomSettings(builder.Configuration, settingsFiles);
 
                 // Configure stdio MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
@@ -233,15 +287,23 @@ public class Program
     /// </summary>
     /// <param name="swaggerFileNameOrUrl">The value for the `--swagger` option.</param>
     /// <param name="outputFileName">The optional value for the `--output` option.</param>
+    /// <param name="settingsFiles">The optional values for the `--settings` option.</param>
+    /// <param name="noDefaultSettings">The value for the `--no-default-settings` option.</param>
     /// <param name="args">The collection of command-line arguments.</param>
-    private static async Task GenerateAsync(string swaggerFileNameOrUrl, string? outputFileName, string[] args)
+    private static async Task GenerateAsync(string swaggerFileNameOrUrl, string? outputFileName, string[]? settingsFiles, bool noDefaultSettings, string[] args)
     {
         try
         {
             var builder = Host.CreateApplicationBuilder(args);
 
-            // Load embedded appsettings.json as first configuration source
-            AddEmbeddedAppSettings(builder.Configuration);
+            // Load embedded appsettings.json as first configuration source (unless disabled)
+            if (!noDefaultSettings)
+            {
+                AddEmbeddedAppSettings(builder.Configuration);
+            }
+
+            // Load custom settings files (after default settings if both are present)
+            AddCustomSettings(builder.Configuration, settingsFiles);
 
             builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
 
