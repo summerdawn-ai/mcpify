@@ -1,5 +1,4 @@
 using System.CommandLine;
-using System.Reflection;
 
 using Summerdawn.Mcpifier.DependencyInjection;
 using Summerdawn.Mcpifier.Services;
@@ -27,18 +26,19 @@ public class Program
             args = ["serve", "--mode=http"];
         }
 
-        // Create global options
+        // Create shared options, but don't make them global so that
+        // we can control the order in which the options are listed.
         var settingsOption = new Option<string[]>("--settings")
         {
-            Description = "Path to a JSON configuration file to load. Can be specified multiple times.",
+            Description = "The path to any additional configuration JSON file to load",
             Arity = ArgumentArity.ZeroOrMore,
-            AllowMultipleArgumentsPerToken = false
+            AllowMultipleArgumentsPerToken = true,
         };
 
         var noDefaultSettingsOption = new Option<bool>("--no-default-settings")
         {
-            Description = "Do not load the default embedded appsettings.json.",
-            Arity = ArgumentArity.Zero
+            Description = "Skip loading default settings",
+            Arity = ArgumentArity.Zero,
         };
 
         // Create "serve" command
@@ -50,21 +50,12 @@ public class Program
         // Create root command with global options
         var rootCommand = new RootCommand("Mcpifier - an MCP-to-REST gateway that can run in HTTP or stdio mode")
         {
-            settingsOption,
-            noDefaultSettingsOption,
             serveCommand,
             generateCommand
         };
 
         // Make "serve" the default command by adding its options to root and setting the same action.
-        // Skip global options that are already added to root command.
-        foreach (var option in serveCommand.Options)
-        {
-            if (option != settingsOption && option != noDefaultSettingsOption)
-            {
-                rootCommand.Add(option);
-            }
-        }
+        foreach (var option in serveCommand.Options) rootCommand.Options.Add(option);
         rootCommand.Action = serveCommand.Action;
 
         try
@@ -82,47 +73,52 @@ public class Program
     {
         var modeOption = new Option<string>("--mode", "-m")
         {
-            Description = "The server mode to use.",
+            Description = "The server mode to use",
             Required = true
         }.AcceptOnlyFromAmong("http", "stdio");
 
         var swaggerOption = new Option<string>("--swagger")
         {
-            Description =
-                "The optional file name or URL of the Swagger/OpenAPI specification JSON file from which to generate tool mappings.",
+            Description = "The path or URL of a Swagger/OpenAPI specification JSON file from which to generate tool mappings",
             Required = false
         };
 
         var mappingsOption = new Option<string>("--mappings")
         {
-            Description = "The file path to a JSON file containing tool mappings.",
+            Description = "The path to a tool mappings JSON file from which to load tool mappings",
             Required = false
         };
 
         var serveCommand = new Command("serve", "Start the Mcpifier server in HTTP or stdio mode")
         {
-            settingsOption,
-            noDefaultSettingsOption,
             modeOption,
             swaggerOption,
-            mappingsOption
+            mappingsOption,
+            settingsOption,
+            noDefaultSettingsOption
         };
+
+        serveCommand.Validators.Add(parseResult =>
+        {
+            bool swagger = parseResult.GetValue(swaggerOption) is not null;
+            bool mappings = parseResult.GetValue(mappingsOption) is not null;
+
+            // Validate that either --mappings or --swagger is specified, not both
+            if (swagger && mappings)
+            {
+                parseResult.AddError("Cannot use both --swagger and --mappings options together");
+            }
+        });
 
         serveCommand.SetAction(async parseResult =>
         {
             string mode = parseResult.GetValue(modeOption)!;
             string? swaggerFileNameOrUrl = parseResult.GetValue(swaggerOption);
-            string? mappingsFile = parseResult.GetValue(mappingsOption);
-            string[]? settingsFiles = parseResult.GetValue(settingsOption);
+            string? mappingsFileName = parseResult.GetValue(mappingsOption);
+            string[] settingsFileNames = parseResult.GetValue(settingsOption)!;
             bool noDefaultSettings = parseResult.GetValue(noDefaultSettingsOption);
 
-            // Validate that either --mappings or --swagger is specified, not both
-            if (swaggerFileNameOrUrl is not null && mappingsFile is not null)
-            {
-                throw new InvalidOperationException("Cannot specify both --swagger and --mappings options. Please use only one.");
-            }
-
-            await ServeAsync(mode, swaggerFileNameOrUrl, mappingsFile, settingsFiles, noDefaultSettings, args);
+            await ServeAsync(mode, swaggerFileNameOrUrl, mappingsFileName, settingsFileNames, noDefaultSettings, args);
         });
 
         return serveCommand;
@@ -133,77 +129,34 @@ public class Program
         var swaggerOption = new Option<string>("--swagger")
         {
             Description =
-                "The file name or URL of the Swagger/OpenAPI specification JSON file from which to generate tool mappings.",
+                "The path or URL of the Swagger/OpenAPI specification JSON file from which to generate tool mappings",
             Required = true
         };
 
-        var outputOption = new Option<string?>("--output")
+        var outputOption = new Option<string?>("--output", "-o")
         {
-            Description = "The optional custom file name for the generated mappings.",
+            Description = "The output path for the generated mapping file [default: mappings.json]",
             Required = false
         };
 
         var generateCommand = new Command("generate", "Generate tool mappings from a Swagger/OpenAPI specification")
         {
-            settingsOption,
-            noDefaultSettingsOption,
             swaggerOption,
-            outputOption
+            outputOption,
+            settingsOption,
+            noDefaultSettingsOption
         };
+
         generateCommand.SetAction(async parseResult =>
         {
             string swaggerFileNameOrUrl = parseResult.GetValue(swaggerOption)!;
             string? outputFileName = parseResult.GetValue(outputOption);
-            string[]? settingsFiles = parseResult.GetValue(settingsOption);
+            string[] settingsFileNames = parseResult.GetValue(settingsOption)!;
             bool noDefaultSettings = parseResult.GetValue(noDefaultSettingsOption);
 
-            await GenerateAsync(swaggerFileNameOrUrl, outputFileName, settingsFiles, noDefaultSettings, args);
+            await GenerateAsync(swaggerFileNameOrUrl, outputFileName, settingsFileNames, noDefaultSettings, args);
         });
         return generateCommand;
-    }
-
-    /// <summary>
-    /// Adds the embedded appsettings.json as the first configuration source.
-    /// </summary>
-    /// <param name="configurationManager">The configuration manager to add the source to.</param>
-    private static void AddEmbeddedAppSettings(ConfigurationManager configurationManager)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        var resourceName = "Summerdawn.Mcpifier.Server.appsettings.json";
-        
-        using Stream? resourceStream = assembly.GetManifestResourceStream(resourceName);
-        if (resourceStream is not null)
-        {
-            // Copy to MemoryStream for configuration system use.
-            // NOTE: The MemoryStream is intentionally NOT disposed here. The JsonStreamConfigurationProvider
-            // takes ownership of the stream and will dispose it when the provider itself is disposed as part
-            // of the configuration system's lifecycle. This is the standard pattern for stream-based configuration sources.
-            var memoryStream = new MemoryStream();
-            resourceStream.CopyTo(memoryStream);
-            memoryStream.Position = 0;
-            
-            // Insert at position 0 to make it the first source
-            configurationManager.Sources.Insert(0, new Microsoft.Extensions.Configuration.Json.JsonStreamConfigurationSource
-            {
-                Stream = memoryStream
-            });
-        }
-    }
-
-    /// <summary>
-    /// Adds custom settings files to the configuration.
-    /// </summary>
-    /// <param name="configurationManager">The configuration manager to add the sources to.</param>
-    /// <param name="settingsFiles">Array of settings file paths to load.</param>
-    private static void AddCustomSettings(ConfigurationManager configurationManager, string[]? settingsFiles)
-    {
-        if (settingsFiles is null || settingsFiles.Length == 0)
-            return;
-
-        foreach (string settingsFile in settingsFiles)
-        {
-            configurationManager.AddJsonFile(settingsFile, optional: false, reloadOnChange: false);
-        }
     }
 
     /// <summary>
@@ -211,33 +164,22 @@ public class Program
     /// </summary>
     /// <param name="mode">The value for the `--mode` option.</param>
     /// <param name="swaggerFileNameOrUrl">The optional value for the `--swagger` option.</param>
-    /// <param name="mappingsFile">The optional value for the `--mappings` option.</param>
-    /// <param name="settingsFiles">The optional values for the `--settings` option.</param>
+    /// <param name="mappingsFileName">The optional value for the `--mappings` option.</param>
+    /// <param name="settingsFileNames">The optional values for the `--settings` option.</param>
     /// <param name="noDefaultSettings">The value for the `--no-default-settings` option.</param>
     /// <param name="args">The collection of command-line arguments.</param>
-    private static async Task ServeAsync(string mode, string? swaggerFileNameOrUrl, string? mappingsFile, string[]? settingsFiles, bool noDefaultSettings, string[] args)
+    private static async Task ServeAsync(string mode, string? swaggerFileNameOrUrl, string? mappingsFileName, string[] settingsFileNames, bool noDefaultSettings, string[] args)
     {
         if (mode == "http")
         {
             WebApplication app;
             try
             {
+                // Loads appsettings.json from working directory if present
                 var builder = WebApplication.CreateBuilder();
 
-                // Load embedded appsettings.json as first configuration source (unless disabled)
-                if (!noDefaultSettings)
-                {
-                    AddEmbeddedAppSettings(builder.Configuration);
-                }
-
-                // Load custom settings files (after default settings if both are present)
-                AddCustomSettings(builder.Configuration, settingsFiles);
-
-                // Load mappings file (after custom settings if specified)
-                if (mappingsFile is not null)
-                {
-                    builder.Configuration.AddJsonFile(mappingsFile, optional: false, reloadOnChange: false);
-                }
+                // Load embedded, default and custom settings and mappings files.
+                builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames, mappingsFileName);
 
                 // Configure HTTP MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier")).AddAspNetCore();
@@ -263,7 +205,7 @@ public class Program
             catch (Exception ex)
             {
                 // Append note about README.md to exceptions thrown during app configuration.
-                throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions on how to configure Mcpifier.", ex);
+                throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions on how to configure and run Mcpifier.", ex);
             }
 
             await app.RunAsync();
@@ -275,20 +217,8 @@ public class Program
             {
                 var builder = Host.CreateApplicationBuilder(args);
 
-                // Load embedded appsettings.json as first configuration source (unless disabled)
-                if (!noDefaultSettings)
-                {
-                    AddEmbeddedAppSettings(builder.Configuration);
-                }
-
-                // Load custom settings files (after default settings if both are present)
-                AddCustomSettings(builder.Configuration, settingsFiles);
-
-                // Load mappings file (after custom settings if specified)
-                if (mappingsFile is not null)
-                {
-                    builder.Configuration.AddJsonFile(mappingsFile, optional: false, reloadOnChange: false);
-                }
+                // Load embedded, default and custom settings and mappings files.
+                builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames, mappingsFileName);
 
                 // Configure stdio MCP gateway.
                 var mcpifierBuilder = builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
@@ -312,7 +242,7 @@ public class Program
             catch (Exception ex)
             {
                 // Append note about README.md to exceptions thrown during app configuration.
-                throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions on how to configure Mcpifier.", ex);
+                throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions on how to configure and run Mcpifier.", ex);
             }
 
             await app.RunAsync();
@@ -324,23 +254,17 @@ public class Program
     /// </summary>
     /// <param name="swaggerFileNameOrUrl">The value for the `--swagger` option.</param>
     /// <param name="outputFileName">The optional value for the `--output` option.</param>
-    /// <param name="settingsFiles">The optional values for the `--settings` option.</param>
+    /// <param name="settingsFileNames">The optional values for the `--settings` option.</param>
     /// <param name="noDefaultSettings">The value for the `--no-default-settings` option.</param>
     /// <param name="args">The collection of command-line arguments.</param>
-    private static async Task GenerateAsync(string swaggerFileNameOrUrl, string? outputFileName, string[]? settingsFiles, bool noDefaultSettings, string[] args)
+    private static async Task GenerateAsync(string swaggerFileNameOrUrl, string? outputFileName, string[] settingsFileNames, bool noDefaultSettings, string[] args)
     {
         try
         {
             var builder = Host.CreateApplicationBuilder(args);
 
-            // Load embedded appsettings.json as first configuration source (unless disabled)
-            if (!noDefaultSettings)
-            {
-                AddEmbeddedAppSettings(builder.Configuration);
-            }
-
-            // Load custom settings files (after default settings if both are present)
-            AddCustomSettings(builder.Configuration, settingsFiles);
+            // Load embedded, default and custom settings and mappings files.
+            builder.Configuration.AddMcpifierSettings(noDefaultSettings, settingsFileNames, mappingsFileName: null);
 
             builder.Services.AddMcpifier(builder.Configuration.GetSection("Mcpifier"));
 
@@ -353,7 +277,7 @@ public class Program
         catch (Exception ex)
         {
             // Append note about README.md to exceptions thrown during app configuration.
-            throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions on how to configure Mcpifier.", ex);
+            throw new InvalidOperationException($"{ex.Message}\r\n\r\nConsult README.md for instructions on how to configure and run Mcpifier.", ex);
         }
     }
 }
