@@ -23,9 +23,9 @@ internal static class ServiceProviderExtensions
             string contentRoot = serviceProvider.GetRequiredService<IHostEnvironment>().ContentRootPath;
             var logger = serviceProvider.GetRequiredService<ILogger<McpifierBuilder>>();
 
-            logger.LogError("No tool mappings were found in the app configuration. The expected location for configuration files is '{contentRoot}'.", contentRoot);
+            logger.LogError("No tool mappings have been configured. The default location for mappings files is '{contentRoot}'.", contentRoot);
             
-            throw new InvalidOperationException("No tool mappings were found in the app configuration.");
+            throw new InvalidOperationException("No tool mappings have been configured.");
         }
 
         return serviceProvider;
