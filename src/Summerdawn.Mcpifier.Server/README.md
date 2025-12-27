@@ -54,7 +54,7 @@ See the [Usage](#usage) section below for a detailed description of available co
 
 ### Installation as a .NET Tool
 
-Install Mcpifier Server globally using the .NET CLI:
+Install the Mcpifier server globally using the .NET CLI:
 
 ```bash
 dotnet tool install -g Summerdawn.Mcpifier.Server
@@ -66,7 +66,7 @@ Or locally in a project:
 dotnet tool install Summerdawn.Mcpifier.Server
 ```
 
-The dotnet tool version of the server requires the .NET 8.0 runtime or later.
+The .NET tool version of the server requires the .NET 8.0 runtime or later.
 
 ### Installation as a Standalone Binary
 
@@ -79,6 +79,19 @@ Supported platforms:
 - macOS (x64, ARM64)
 
 The pre-built binaries are standalone, AOT-compiled executables that do not require a separate .NET runtime installation.
+
+### Executing Directly with dnx
+
+If you have the .NET 10 or later SDK installed, you can run the Mcpifier server directly using `dotnet tool exec` or `dnx` without installing it as a global or local tool, for example:
+
+```bash
+dotnet tool exec Summerdawn.Mcpifier.Server --yes -- serve --mode http --swagger https://api.example.com/swagger.json
+
+# Or simply
+dnx Summerdawn.Mcpifier.Server --yes -- serve --mode http --swagger https://api.example.com/swagger.json
+```
+
+See the [dotnet tool exec documentation](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-exec) for more information.
 
 ## Usage
 
@@ -659,7 +672,8 @@ Debug logs may contain sensitive information. Don't enable them in a production 
 - [Mcpifier ASP.NET Core documentation](https://github.com/summerdawn-ai/mcpifier/tree/main/src/Summerdawn.Mcpifier.AspNetCore)
 - [Model Context Protocol specification](https://modelcontextprotocol.io/specification/2025-06-18)
 - [MCP Authorization](https://modelcontextprotocol.io/docs/tutorials/security/authorization)
-
+- [dotnet CLI documentation](https://learn.microsoft.com/en-us/dotnet/core/tools/)
+ 
 ## License
 
 This project is licensed under the MIT License.
