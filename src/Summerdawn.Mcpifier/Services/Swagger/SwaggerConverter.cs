@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -181,11 +182,11 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         // Create initial input schema based on request body, if present.
         if (operation.RequestBody?.Content?.TryGetValue("application/json", out var requestBody) == true)
         {
-            var schema = GetDereferencedSchema(requestBody.Schema);
+            var schema = ResolveSchema(requestBody.Schema);
 
             // If the request body is an object, use it as the base of the InputSchema;
             // otherwise, add the request body as a single property "requestBody".
-            if (schema?.Type == JsonSchemaType.Object)
+            if (schema is { Type: JsonSchemaType.Object })
             {
                 // Serialize as not-quite-JSON-Schema v3.0 so we don't get type
                 // arrays for nullable types that break our deserialization.
@@ -206,7 +207,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
 
         foreach (var param in operation.Parameters ?? [])
         {
-            var schema = GetDereferencedSchema(param.Schema);
+            var schema = ResolveSchema(param.Schema);
 
             if (schema is null)
             {
@@ -262,7 +263,7 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         // Build request body template
         if (operation.RequestBody?.Content?.TryGetValue("application/json", out var mediaType) == true)
         {
-            var schema = GetDereferencedSchema(mediaType.Schema);
+            var schema = ResolveSchema(mediaType.Schema);
 
             if (schema is { Type: JsonSchemaType.Object, Properties: not null })
             {
@@ -356,9 +357,72 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
     }
 
     /// <summary>
-    /// Dereferences the specified schema if it is a reference.
+    /// Resolves any references (including nested) in the specified schema.
     /// </summary>
-    private static IOpenApiSchema? GetDereferencedSchema(IOpenApiSchema? schema)
+    private static IOpenApiSchema? ResolveSchema(IOpenApiSchema? schema)
+    {
+        return ResolveSchemaTree(schema, new HashSet<IOpenApiSchema>(SchemaReferenceEqualityComparer.Instance));
+    }
+
+    private static IOpenApiSchema? ResolveSchemaTree(IOpenApiSchema? schema, HashSet<IOpenApiSchema> visited)
+    {
+        schema = UnwrapReference(schema);
+
+        if (schema is null || !visited.Add(schema))
+        {
+            return schema;
+        }
+
+        if (schema is OpenApiSchema concrete)
+        {
+            concrete.Items = ResolveSchemaTree(concrete.Items, visited);
+            concrete.Not = ResolveSchemaTree(concrete.Not, visited);
+            concrete.AdditionalProperties = ResolveSchemaTree(concrete.AdditionalProperties, visited);
+
+            if (concrete.Properties is not null && concrete.Properties.Count > 0)
+            {
+                string[] propertyNames = concrete.Properties.Keys.ToArray();
+                foreach (string propertyName in propertyNames)
+                {
+                    IOpenApiSchema? resolvedProperty = ResolveSchemaTree(concrete.Properties[propertyName], visited);
+                    if (resolvedProperty is null)
+                    {
+                        concrete.Properties.Remove(propertyName);
+                    }
+                    else
+                    {
+                        concrete.Properties[propertyName] = resolvedProperty;
+                    }
+                }
+            }
+
+            ResolveSchemaCollection(concrete.AllOf, visited);
+            ResolveSchemaCollection(concrete.AnyOf, visited);
+            ResolveSchemaCollection(concrete.OneOf, visited);
+        }
+
+        visited.Remove(schema);
+        return schema;
+    }
+
+    private static void ResolveSchemaCollection(IList<IOpenApiSchema>? collection, HashSet<IOpenApiSchema> visited)
+    {
+        if (collection is null)
+        {
+            return;
+        }
+
+        for (int index = 0; index < collection.Count; index++)
+        {
+            IOpenApiSchema? resolvedItem = ResolveSchemaTree(collection[index], visited);
+            if (resolvedItem is not null)
+            {
+                collection[index] = resolvedItem;
+            }
+        }
+    }
+
+    private static IOpenApiSchema? UnwrapReference(IOpenApiSchema? schema)
     {
         while (schema is OpenApiSchemaReference reference)
         {
@@ -366,5 +430,20 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         }
 
         return schema;
+    }
+
+    private sealed class SchemaReferenceEqualityComparer : IEqualityComparer<IOpenApiSchema>
+    {
+        public static SchemaReferenceEqualityComparer Instance { get; } = new SchemaReferenceEqualityComparer();
+
+        public bool Equals(IOpenApiSchema? x, IOpenApiSchema? y)
+        {
+            return ReferenceEquals(x, y);
+        }
+
+        public int GetHashCode(IOpenApiSchema obj)
+        {
+            return RuntimeHelpers.GetHashCode(obj);
+        }
     }
 }
