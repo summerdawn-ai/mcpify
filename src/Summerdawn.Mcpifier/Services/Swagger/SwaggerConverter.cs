@@ -371,6 +371,12 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         return ResolveSchemaTree(schema, new HashSet<IOpenApiSchema>(SchemaReferenceEqualityComparer.Instance));
     }
 
+    /// <summary>
+    /// Recursively resolves references throughout a schema subtree while avoiding cycles.
+    /// </summary>
+    /// <param name="schema">The schema to resolve.</param>
+    /// <param name="visited">Set used to track visited schemas.</param>
+    /// <returns>The resolved schema, or null if none.</returns>
     private static IOpenApiSchema? ResolveSchemaTree(IOpenApiSchema? schema, HashSet<IOpenApiSchema> visited)
     {
         schema = UnwrapReference(schema);
@@ -412,6 +418,11 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         return schema;
     }
 
+    /// <summary>
+    /// Resolves references for every schema within a collection.
+    /// </summary>
+    /// <param name="collection">The schema collection to process.</param>
+    /// <param name="visited">Set used to track visited schemas.</param>
     private static void ResolveSchemaCollection(IList<IOpenApiSchema>? collection, HashSet<IOpenApiSchema> visited)
     {
         if (collection is null)
@@ -429,6 +440,11 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         }
     }
 
+    /// <summary>
+    /// Follows schema references until a concrete schema instance is reached.
+    /// </summary>
+    /// <param name="schema">The schema to unwrap.</param>
+    /// <returns>The target schema after unwrapping references, or null.</returns>
     private static IOpenApiSchema? UnwrapReference(IOpenApiSchema? schema)
     {
         while (schema is OpenApiSchemaReference reference)
