@@ -265,18 +265,25 @@ public class SwaggerConverter(IHttpClientFactory httpClientFactory, ILogger<Swag
         {
             var schema = ResolveSchema(mediaType.Schema);
 
-            if (schema is { Type: JsonSchemaType.Object, Properties: not null })
+            if (schema is { Type: JsonSchemaType.Object })
             {
-                var bodyParts = new List<string>();
-                foreach (var prop in schema.Properties)
+                // Request body is object, so build body template from individual properties.
+                if (schema.Properties?.Count > 0)
                 {
-                    bodyParts.Add($"\"{prop.Key}\": {{{prop.Key}}}");
-                }
+                    var bodyParts = schema.Properties.Select(prop => $"\"{prop.Key}\": {{{prop.Key}}}");
 
-                if (bodyParts.Count > 0)
-                {
                     config.Body = "{ " + string.Join(", ", bodyParts) + " }";
                 }
+                else
+                {
+                    config.Body = "{}";
+                }
+            }
+            else if (schema is not null)
+            {
+                // Otherwise, we added the body to the input schema as a
+                // single property "requestBody", so reflect that here.
+                config.Body = "{requestBody}";
             }
         }
 
